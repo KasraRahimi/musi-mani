@@ -1,0 +1,6 @@
+# ignnore environment folder and file
+/env
+.env
+
+# ignore pycaches
+__pycache__/
