@@ -1,5 +1,10 @@
-from interactions import slash_command, SlashContext
+from interactions import SlashContext, SlashCommand
 
-@slash_command(name="ping", description="Replies with pong")
-async def ping(ctx: SlashContext):
-    await ctx.send("pong")
+async def callback(ctx: SlashContext):
+    await ctx.send("🏓 pong")
+
+ping = SlashCommand(
+    name="ping",
+    description="Replies with pong",
+    callback=callback
+)

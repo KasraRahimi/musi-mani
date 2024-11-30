@@ -1,7 +1,6 @@
-from interactions import slash_command, SlashContext
+from interactions import SlashCommand, SlashContext
 
-@slash_command(name="name", description="Replies with your name")
-async def name(ctx: SlashContext):
+async def callback(ctx: SlashContext):
     name = ctx.author.username
     nickname = ctx.author.nickname
 
@@ -11,3 +10,9 @@ async def name(ctx: SlashContext):
     
     
     await ctx.send(f"Your name is {name}, though here, we call you {nickname}")
+
+name = SlashCommand(
+    name="name",
+    description="Replies with your name",
+    callback=callback
+)
