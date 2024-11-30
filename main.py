@@ -1,12 +1,8 @@
-import os 
-from dotenv import load_dotenv
-from interactions import Client, Intents, listen
 from commands import *
+from constants import TOKEN
+from interactions import Client, Intents, listen
 
 if __name__ == "__main__":
-    load_dotenv()
-    TOKEN = os.getenv("TOKEN")
-
     bot = Client(token=TOKEN, intents=Intents.DEFAULT)
 
     @listen()
