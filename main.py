@@ -1,6 +1,6 @@
 import commands
 from constants import TOKEN
-from interactions import Client, Intents, listen, SlashCommand, Status
+from interactions import Client, Intents, listen, SlashCommand
 
 
 def register_commands(bot: Client):
