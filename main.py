@@ -5,6 +5,7 @@ from interactions import Client, Intents, listen, SlashCommand
 
 def register_commands(bot: Client):
     for command_name in commands.__all__:
+        print("Loading {} command".format(command_name))
         command: SlashCommand = getattr(commands, command_name)
         bot.add_interaction(command)
 
