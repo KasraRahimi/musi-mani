@@ -1,4 +1,4 @@
-from interactions import SlashCommand, SlashContext, ActionRow, Button, ButtonStyle, Message, listen, slash_command
+from interactions import SlashContext, ActionRow, Button, ButtonStyle, Message, listen, slash_command
 from enum import Enum
 from interactions.api.events import Component
 from asyncio import exceptions

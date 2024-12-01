@@ -1,10 +1,8 @@
 from asyncio import exceptions
-from interactions import SlashCommand, InteractionContext, Button, ButtonStyle, ActionRow, SlashCommandOption, \
-    OptionType, Client, Message, ComponentContext
+from interactions import InteractionContext, Button, ButtonStyle, ActionRow, SlashCommandOption, \
+    OptionType, Client, ComponentContext, slash_command
 from enum import Enum
-
 from interactions.api.events import Component
-
 from games.blackjack import Blackjack, Outcome
 
 class Choice(Enum):
@@ -115,7 +113,13 @@ async def get_component_ctx(bot: Client, action_row, user_id: str) -> None | Com
     else:
         return used_component.ctx
 
-async def callback(ctx: InteractionContext, bet: int):
+
+@slash_command(
+    name="blackjack",
+    description="Play a game of blackhack",
+    options=[bet]
+)
+async def blackjack(ctx: InteractionContext, bet: int):
     bot: Client = ctx.bot
     user_id = str(ctx.author.id)
     blackjack = Blackjack(bet)
@@ -139,11 +143,3 @@ async def callback(ctx: InteractionContext, bet: int):
 
     await ctx.edit(message, components=[])
     await message.reply(get_final_game_update_message(user_id, blackjack))
-
-
-blackjack = SlashCommand(
-    name="blackjack",
-    description="Play a game of blackhack",
-    callback=callback,
-    options=[bet]
-)
