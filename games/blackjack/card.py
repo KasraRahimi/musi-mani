@@ -17,11 +17,31 @@ class Rank(Enum):
     ACE = "A"
 
 class Suit(Enum):
-    CLUB = "club"
-    DIAMOND = "diamond"
-    HEART = "heart"
-    SPADE = "spade"
+    CLUBS = "clubs"
+    DIAMONDS = "diamonds"
+    HEARTS = "hearts"
+    SPADES = "spades"
+
+class Card:
+    def __init__(self, rank: Rank, suit: Suit):
+        self.rank, self.suit = rank, suit
+
+    @property
+    def value(self):
+        if self.rank == Rank.ACE:
+            return 1
+        try:
+            return int(self.rank.value)
+        except ValueError:
+            return 10
+
+    def __str__(self):
+        return f"{self.rank.value} of {self.suit.value}"
 
 if __name__ == "__main__":
+    deck = []
     for suit in Suit:
-        print(suit.name)
+        for rank in Rank:
+            deck.append(Card(rank, suit))
+    for card in deck:
+        print(f"{card} with value of {card.value}")
