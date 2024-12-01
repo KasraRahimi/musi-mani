@@ -16,7 +16,7 @@ class Blackjack:
         self.outcome: None | Outcome = None
         self.bet: int = bet
         self.deck: list[Card] = self.__get_shuffled_deck(num_of_decks)
-        self.canDouble: bool = True
+        self.can_double: bool = True
 
         self.player_hand: list[Card] = []
         self.dealer_hand: list[Card] = []
@@ -81,7 +81,7 @@ class Blackjack:
         if self.outcome is not None:
             return
 
-        self.canDouble = False
+        self.can_double = False
         self.player_hand.append(self.deck.pop())
 
         if self.player_value > 21:
@@ -91,7 +91,7 @@ class Blackjack:
         if self.outcome is not None:
             return
 
-        self.canDouble = False
+        self.can_double = False
 
         while self.dealer_value < 17:
             self.dealer_hand.append(self.deck.pop())
@@ -106,13 +106,12 @@ class Blackjack:
             self.outcome = Outcome.DRAW
             return
 
-        self.__calculate_winnings()
-
     def double(self):
-        if self.outcome is not None:
+        if self.outcome is not None or not self.can_double:
             return
 
-        self.canDouble = False
+        self.bet *= 2
+        self.hit()
 
     @property
     def winnings(self):
