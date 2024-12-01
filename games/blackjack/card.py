@@ -38,6 +38,9 @@ class Card:
     def __str__(self):
         return f"{self.rank.value} of {self.suit.value}"
 
+    def __repr__(self):
+        return str(self)
+
 if __name__ == "__main__":
     deck = []
     for suit in Suit:
