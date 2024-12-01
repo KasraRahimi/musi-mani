@@ -71,8 +71,14 @@ class Blackjack:
                 return
             self.outcome = Outcome.BLACKJACK
 
+    def hit(self):
+        self.canDouble = False
 
+    def stand(self):
+        self.canDouble = False
 
+    def double(self):
+        self.canDouble = False
 
 
 if __name__ == "__main__":
