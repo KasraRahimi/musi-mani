@@ -1,5 +1,5 @@
 from enum import Enum
-from card import Card, Rank, Suit
+from .card import Card, Rank, Suit
 from random import shuffle
 
 class Outcome(Enum):
@@ -17,7 +17,6 @@ class Blackjack:
         self.bet: int = bet
         self.deck: list[Card] = self.__get_shuffled_deck(num_of_decks)
         self.canDouble: bool = True
-        self.winnings: int = 0
 
         self.player_hand: list[Card] = []
         self.dealer_hand: list[Card] = []
@@ -115,16 +114,17 @@ class Blackjack:
 
         self.canDouble = False
 
-    def __calculate_winnings(self):
+    @property
+    def winnings(self):
         match self.outcome:
             case Outcome.WIN:
-                self.winnings = self.bet * self.WIN_MULTIPLIER
+                return self.bet * self.WIN_MULTIPLIER
             case Outcome.LOSE:
-                self.winnings = 0
+                return 0
             case Outcome.BLACKJACK:
-                self.winnings = self.bet * self.BLACKJACK_MULTIPLIER
+                return self.bet * self.BLACKJACK_MULTIPLIER
             case Outcome.DRAW:
-                self.winnings = self.bet
+                return self.bet
 
 # def get_player_input() -> int:
 #     print("1 - hit")
