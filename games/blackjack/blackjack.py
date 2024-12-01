@@ -116,15 +116,17 @@ class Blackjack:
 
     @property
     def winnings(self):
+        winnings = 0
         match self.outcome:
             case Outcome.WIN:
-                return self.bet * self.WIN_MULTIPLIER
+                winnings = self.bet * self.WIN_MULTIPLIER
             case Outcome.LOSE:
-                return 0
+                winnings = 0
             case Outcome.BLACKJACK:
-                return self.bet * self.BLACKJACK_MULTIPLIER
+                winnings = self.bet * self.BLACKJACK_MULTIPLIER
             case Outcome.DRAW:
-                return self.bet
+                winnings = self.bet
+        return int(winnings)
 
 # def get_player_input() -> int:
 #     print("1 - hit")
