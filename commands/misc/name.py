@@ -1,7 +1,7 @@
-from interactions import SlashCommand, SlashContext, ActionRow, Button, ButtonStyle, Message, listen
+from interactions import SlashCommand, SlashContext, ActionRow, Button, ButtonStyle, Message, listen, slash_command
 from enum import Enum
-
 from interactions.api.events import Component
+from asyncio import exceptions
 
 
 class Choice(Enum):
@@ -23,22 +23,23 @@ action_row = [
     )
 ]
 
-async def callback(ctx: SlashContext):
-    name = ctx.author.username
+@slash_command(name="name", description="Replies with your name")
+async def name(ctx: SlashContext):
+    username = ctx.author.username
     nickname = ctx.author.nickname
     bot = ctx.bot
 
-    if nickname is None or name == nickname:
-        await ctx.send(f"Your name is simply {name}")
+    if nickname is None or username == nickname:
+        await ctx.send(f"Your name is simply {username}")
         return
 
-    await ctx.send(f"Your name is {name}, though here, we call you {nickname}")
+    await ctx.send(f"Your name is {username}, though here, we call you {nickname}")
 
     message = await ctx.send("Did I get that right?", ephemeral=True, components=action_row)
 
     try:
         used_component: Component = await bot.wait_for_component(components=action_row, timeout=30)
-    except TimeoutError:
+    except exceptions.TimeoutError:
         await ctx.edit(message, content="Oops, you took too long to answer", components=[])
     else:
         match used_component.ctx.custom_id:
@@ -47,10 +48,4 @@ async def callback(ctx: SlashContext):
             case Choice.NO.value:
                 await ctx.send("That's a shame", ephemeral=True)
 
-        await ctx.edit(message, components=[])
-
-name = SlashCommand(
-    name="name",
-    description="Replies with your name",
-    callback=callback
-)
+        await ctx.edit(message,components=[])

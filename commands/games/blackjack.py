@@ -1,4 +1,4 @@
-import asyncio.exceptions
+from asyncio import exceptions
 from interactions import SlashCommand, InteractionContext, Button, ButtonStyle, ActionRow, SlashCommandOption, \
     OptionType, Client, Message, ComponentContext
 from enum import Enum
@@ -110,7 +110,7 @@ async def get_component_ctx(bot: Client, action_row, user_id: str) -> None | Com
             timeout=30,
             check=same_user_check
         )
-    except asyncio.exceptions.TimeoutError as e:
+    except exceptions.TimeoutError as e:
         return None
     else:
         return used_component.ctx
