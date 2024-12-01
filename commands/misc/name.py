@@ -24,7 +24,7 @@ action_row = [
 ]
 
 async def callback(ctx: SlashContext):
-    name = ctx.author.display_name
+    name = ctx.author.username
     nickname = ctx.author.nickname
     bot = ctx.bot
 
