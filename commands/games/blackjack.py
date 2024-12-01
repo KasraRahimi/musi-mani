@@ -96,9 +96,19 @@ def get_final_game_update_message(userId: str, blackjack: Blackjack) -> str:
 
     return "\n".join(message)
 
-async def get_component_ctx(bot: Client, action_row) -> None | ComponentContext:
+async def get_component_ctx(bot: Client, action_row, user_id: str) -> None | ComponentContext:
+    async def same_user_check(component: Component):
+        if str(component.ctx.author.id) == user_id:
+            return True
+        await component.ctx.edit_origin()
+        return False
+
     try:
-        used_component: Component = await bot.wait_for_component(components=action_row, timeout=30)
+        used_component: Component = await bot.wait_for_component(
+            components=action_row,
+            timeout=30,
+            check=same_user_check
+        )
     except TimeoutError:
         return None
     else:
@@ -106,15 +116,15 @@ async def get_component_ctx(bot: Client, action_row) -> None | ComponentContext:
 
 async def callback(ctx: InteractionContext, bet: int):
     bot: Client = ctx.bot
-    userId = str(ctx.author.id)
+    user_id = str(ctx.author.id)
     blackjack = Blackjack(bet)
 
     blackjack.start()
     action_row = get_choice_action_row()
-    message = await ctx.send(get_game_update_message(userId, blackjack), components=action_row)
+    message = await ctx.send(get_game_update_message(user_id, blackjack), components=action_row)
 
     while blackjack.outcome is None:
-        component_ctx = await get_component_ctx(bot, action_row)
+        component_ctx = await get_component_ctx(bot, action_row, user_id)
         if component_ctx is None:
             await message.edit(content="You failed to reply in time", components=[])
             return
@@ -124,10 +134,10 @@ async def callback(ctx: InteractionContext, bet: int):
                 blackjack.hit()
             case Choice.STAND.value:
                 blackjack.stand()
-        await component_ctx.edit_origin(content=get_game_update_message(userId, blackjack), components=action_row)
+        await component_ctx.edit_origin(content=get_game_update_message(user_id, blackjack), components=action_row)
 
     await ctx.edit(message, components=[])
-    await message.reply(get_final_game_update_message(userId, blackjack))
+    await message.reply(get_final_game_update_message(user_id, blackjack))
 
 
 blackjack = SlashCommand(
