@@ -4,6 +4,8 @@ from interactions import InteractionContext, Button, ButtonStyle, ActionRow, Sla
 from enum import Enum
 from interactions.api.events import Component
 from games.blackjack import Blackjack, Outcome
+from .constants import COMMAND_NAME, COMMAND_DESCRIPTION
+
 
 class Choice(Enum):
     HIT = 'hit'
@@ -115,8 +117,10 @@ async def get_component_ctx(bot: Client, action_row, user_id: str) -> None | Com
 
 
 @slash_command(
-    name="blackjack",
-    description="Play a game of blackhack",
+    name=COMMAND_NAME,
+    description=COMMAND_DESCRIPTION,
+    sub_cmd_name="blackjack",
+    sub_cmd_description="Play a game of blackhack",
     options=[bet]
 )
 async def blackjack(ctx: InteractionContext, bet: int):
