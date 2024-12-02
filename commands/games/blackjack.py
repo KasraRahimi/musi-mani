@@ -1,10 +1,10 @@
 from asyncio import exceptions
-from interactions import InteractionContext, Button, ButtonStyle, ActionRow, SlashCommandOption, \
-    OptionType, Client, ComponentContext, slash_command
+from interactions import InteractionContext, Button, ButtonStyle, ActionRow, \
+    Client, ComponentContext, slash_command
 from enum import Enum
 from interactions.api.events import Component
 from games.blackjack import Blackjack, Outcome
-from .constants import COMMAND_NAME, COMMAND_DESCRIPTION
+from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION
 
 
 class Choice(Enum):
@@ -34,14 +34,6 @@ def get_choice_action_row(has_double=False):
         action_row = ActionRow(hit, stand)
 
     return [action_row]
-
-bet = SlashCommandOption(
-    name="bet",
-    description="The bet you wish to place on the game",
-    required=True,
-    type=OptionType.INTEGER,
-    min_value=0
-)
 
 def get_game_update_message(userId: str, blackjack: Blackjack) -> str:
     user_mention = f"<@{userId}>"
@@ -121,7 +113,7 @@ async def get_component_ctx(bot: Client, action_row, user_id: str) -> None | Com
     description=COMMAND_DESCRIPTION,
     sub_cmd_name="blackjack",
     sub_cmd_description="Play a game of blackhack",
-    options=[bet]
+    options=[BET_OPTION]
 )
 async def blackjack(ctx: InteractionContext, bet: int):
     bot: Client = ctx.bot
