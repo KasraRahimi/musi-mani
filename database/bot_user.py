@@ -1,6 +1,6 @@
 import asyncio
 
-from mongo_database import BotDatabase
+from .mongo_database import BotDatabase
 from datetime import datetime
 
 COLLECTION_NAME = "users"
