@@ -1,6 +1,6 @@
 from .misc import name, ping, anonymous
 from .games import blackjack, coin_toss
-from .talan import balance
+from .talan import balance, add_funds
 
 __all__ = [
     # misc commands
@@ -11,5 +11,6 @@ __all__ = [
     'blackjack',
     'coin_toss',
     # talan
-    'balance'
+    'balance',
+    'add_funds'
 ]
