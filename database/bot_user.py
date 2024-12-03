@@ -1,7 +1,7 @@
 import asyncio
 
 from .mongo_database import BotDatabase
-from datetime import datetime
+from datetime import datetime, timedelta
 
 COLLECTION_NAME = "users"
 
@@ -50,14 +50,14 @@ class BotUser:
 
         self.__increment_balance(amount)
 
-    def time_since_last_reward(self):
+    def time_since_last_reward(self) -> None | timedelta:
         last_reward = self.last_reward
         if last_reward is None:
             return last_reward
 
         now = datetime.now()
         delta = now - last_reward
-        return delta.total_seconds()
+        return delta
 
 
     def claim_reward(self, reward_amount: int):
