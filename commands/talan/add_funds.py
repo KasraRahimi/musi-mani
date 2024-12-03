@@ -1,4 +1,7 @@
 from interactions import SlashCommandOption, OptionType, slash_command, check, is_owner, InteractionContext
+from interactions.client.errors import CommandCheckFailure
+
+from database import BotUser
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION
 
 AMOUNT = SlashCommandOption(
@@ -18,4 +21,7 @@ AMOUNT = SlashCommandOption(
 )
 @check(is_owner())
 async def add_funds(ctx: InteractionContext, amount: int):
-    await ctx.send("hi kawa")
+    await ctx.defer()
+    jan_kawa = BotUser(str(ctx.user.id))
+    jan_kawa.deposit(amount)
+    await ctx.send(f"I just deposited {amount} talan into your account\nYour balance: __**{jan_kawa.balance}**__ talan")
