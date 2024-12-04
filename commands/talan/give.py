@@ -26,7 +26,7 @@ AMOUNT = SlashCommandOption(
     sub_cmd_description="give talan to a user",
     options=[USER, AMOUNT],
 )
-async def give(ctx: InteractionContext, user: Member, amount: AMOUNT):
+async def give(ctx: InteractionContext, user: Member, amount: int):
     await ctx.defer()
     sender = BotUser(str(ctx.author.id))
     try:
