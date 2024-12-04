@@ -1,12 +1,13 @@
 import asyncio
 
-from interactions import slash_command, SlashContext, ActionRow, Button, ButtonStyle, Message
+from interactions import slash_command, SlashContext, ActionRow, Button, ButtonStyle, Message, InteractionContext
 from enum import Enum
 from random import randint
 from interactions.api.events import Component
 from asyncio import sleep, exceptions
-from commands.games.constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION
-
+from commands.games.constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet, \
+    INSUFFICIENT_FUNDS_MSG
+from database import BotUser
 
 BET_MULTIPLIER = 2
 
@@ -82,7 +83,8 @@ async def edit_message_during_coin_flip(ctx: SlashContext, msg: Message, delay_s
         await sleep(sleep_time)
 
 async def handle_end_game(ctx: SlashContext, msg: Message, player_choice: Choice, outcome: Choice, bet: int) -> None:
-    if player_choice == outcome:
+    is_player_won = player_choice == outcome
+    if is_player_won:
         message_end = (
             "",
             "**You won!**",
@@ -102,9 +104,11 @@ async def handle_end_game(ctx: SlashContext, msg: Message, player_choice: Choice
         *message_end
     )
     message = "\n".join(message)
-    # ~ Code For Player Money Here ~
-    #
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    if is_player_won:
+        bot_user = BotUser(str(ctx.author.id))
+        bot_user.deposit(bet * BET_MULTIPLIER)
+
     await ctx.edit(msg, content=message)
 
 
@@ -117,6 +121,10 @@ async def handle_end_game(ctx: SlashContext, msg: Message, player_choice: Choice
     options=[BET_OPTION]
 )
 async def coin_toss(ctx: SlashContext, bet: int):
+    if not can_player_bet(ctx, bet, do_withdraw=True):
+        await ctx.send(INSUFFICIENT_FUNDS_MSG, ephemeral=True)
+        return
+
     msg = await get_initial_message(ctx)
     player_choice = await get_player_choice(ctx, msg)
     if player_choice is None:
