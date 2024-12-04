@@ -1,10 +1,12 @@
 from asyncio import exceptions
 from interactions import InteractionContext, Button, ButtonStyle, ActionRow, \
-    Client, ComponentContext, slash_command
+    Client, ComponentContext, slash_command, SlashContext
 from enum import Enum
 from interactions.api.events import Component
+
+from database import BotUser
 from games.blackjack import Blackjack, Outcome
-from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION
+from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet, INSUFFICIENT_FUNDS_MSG
 
 
 class Choice(Enum):
@@ -115,17 +117,23 @@ async def get_component_ctx(bot: Client, action_row, user_id: str) -> None | Com
     sub_cmd_description="Play a game of blackhack",
     options=[BET_OPTION]
 )
-async def blackjack(ctx: InteractionContext, bet: int):
+async def blackjack(ctx: SlashContext, bet: int):
+    if not can_player_bet(ctx, bet, do_withdraw=True):
+        await ctx.send(INSUFFICIENT_FUNDS_MSG, ephemeral=True)
+        return
+
     bot: Client = ctx.bot
     user_id = str(ctx.author.id)
     blackjack = Blackjack(bet)
 
     blackjack.start()
-    action_row = get_choice_action_row()
-    message = await ctx.send(get_game_update_message(user_id, blackjack), components=action_row)
+    message = await ctx.send(
+        get_game_update_message(user_id, blackjack),
+        components=get_choice_action_row(has_double=blackjack.can_double)
+    )
 
     while blackjack.outcome is None:
-        component_ctx = await get_component_ctx(bot, action_row, user_id)
+        component_ctx = await get_component_ctx(bot, get_choice_action_row(has_double=blackjack.can_double), user_id)
         if component_ctx is None:
             await message.edit(content="You failed to reply in time", components=[])
             return
@@ -135,7 +143,19 @@ async def blackjack(ctx: InteractionContext, bet: int):
                 blackjack.hit()
             case Choice.STAND.value:
                 blackjack.stand()
-        await component_ctx.edit_origin(content=get_game_update_message(user_id, blackjack), components=action_row)
+            case Choice.DOUBLE.value:
+                if not can_player_bet(ctx, bet, do_withdraw=True):
+                    await ctx.send(INSUFFICIENT_FUNDS_MSG, ephemeral=True)
+                    blackjack.can_double = False
+                else:
+                    blackjack.double()
+
+
+        await component_ctx.edit_origin(content=get_game_update_message(user_id, blackjack), components=get_choice_action_row(has_double=blackjack.can_double))
 
     await ctx.edit(message, components=[])
+
+    bot_user = BotUser(user_id)
+    bot_user.deposit(blackjack.winnings)
+
     await message.reply(get_final_game_update_message(user_id, blackjack))
