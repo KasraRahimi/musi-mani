@@ -48,7 +48,7 @@ class BotUser:
         if self.balance < amount:
             raise ValueError("insufficient funds to withdraw amount")
 
-        self.__increment_balance(amount)
+        self.__increment_balance(-amount)
 
     def time_since_last_reward(self) -> None | timedelta:
         last_reward = self.last_reward
