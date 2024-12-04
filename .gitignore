@@ -2,5 +2,8 @@
 env/
 .env
 
+# ignore IDE folders
+.idea/
+
 # ignore pycaches
 __pycache__/
