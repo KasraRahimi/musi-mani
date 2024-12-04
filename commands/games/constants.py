@@ -1,4 +1,6 @@
-from interactions import SlashCommandOption, OptionType
+from interactions import SlashCommandOption, OptionType, SlashContext
+
+from database import BotUser
 
 COMMAND_NAME = "play"
 
@@ -11,3 +13,22 @@ BET_OPTION = SlashCommandOption(
     type=OptionType.INTEGER,
     min_value=0
 )
+
+INSUFFICIENT_FUNDS_MSG = "You do not have enough talan to place that bet"
+
+
+def can_player_bet(ctx: SlashContext, bet: int, do_withdraw: bool = True):
+    user_id = str(ctx.author.id)
+    bot_user = BotUser(user_id)
+
+    # simply check if the user has enough funds for the bet
+    if not do_withdraw:
+        return bot_user.balance >= bet
+
+    # try to withdraw, and if it fails, tell user they don't have enough
+    try:
+        bot_user.withdraw(bet)
+    except ValueError:
+        return False
+    else:
+        return True
