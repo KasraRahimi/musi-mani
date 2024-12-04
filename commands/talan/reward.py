@@ -16,18 +16,23 @@ TIME_BETWEEN_CLAIMS = datetime.timedelta(days=1)
 )
 async def reward(ctx: InteractionContext):
     bot_user = BotUser(str(ctx.author.id))
-    can_claim_again = (TIME_BETWEEN_CLAIMS - bot_user.time_since_last_reward()).total_seconds() < 0
+    if bot_user.last_reward is None:
+        bot_user.claim_reward(REWARD_AMOUNT)
+        await ctx.send(f"You just claimed your first reward of {REWARD_AMOUNT} talan")
+        return
 
-    if can_claim_again or bot_user.last_reward is None:
-        bot_user.deposit(REWARD_AMOUNT)
+    can_claim_again = TIME_BETWEEN_CLAIMS.total_seconds() < bot_user.time_since_last_reward().total_seconds()
+
+    if can_claim_again:
+        bot_user.claim_reward(REWARD_AMOUNT)
         await ctx.send(f"You just claimed your daily reward of {REWARD_AMOUNT} talan")
         return
 
-    next_claim_epoch = (bot_user.last_reward + TIME_BETWEEN_CLAIMS).timestamp()
+    next_claim_epoch = int((bot_user.last_reward + TIME_BETWEEN_CLAIMS).timestamp())
     message = (
-        f"You claimed your last reward <t:{bot_user.last_reward.timestamp()}:R>",
+        f"You claimed your last reward <t:{int(bot_user.last_reward.timestamp())}:R>",
         "",
-        f"You can claim again in <t:{next_claim_epoch}:R>, that is to say <t:{next_claim_epoch}>"
+        f"You can claim again <t:{next_claim_epoch}:R>, that is to say <t:{next_claim_epoch}>"
     )
     message = "\n".join(message)
     await ctx.send(message)
