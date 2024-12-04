@@ -112,6 +112,7 @@ class Blackjack:
 
         self.bet *= 2
         self.hit()
+        self.stand()
 
     @property
     def winnings(self):
