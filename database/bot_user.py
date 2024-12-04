@@ -28,7 +28,7 @@ class BotUser:
         return self.__find_user().get("balance")
 
     @property
-    def last_reward(self):
+    def last_reward(self) -> datetime | None:
         return self.__find_user().get("last_reward")
 
     def __increment_balance(self, amount: int):
