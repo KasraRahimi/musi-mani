@@ -1,7 +1,7 @@
 from asyncio import exceptions
 from interactions import InteractionContext, Button, ButtonStyle, ActionRow, \
     Client, ComponentContext, slash_command, SlashContext, Message
-from enum import Enum
+from enum import StrEnum
 from interactions.api.events import Component
 
 from database import BotUser
@@ -9,24 +9,24 @@ from games.blackjack import Blackjack, Outcome
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet, INSUFFICIENT_FUNDS_MSG
 
 
-class Choice(Enum):
+class Choice(StrEnum):
     HIT = 'hit'
     STAND = 'stand'
     DOUBLE = 'double'
 
 def get_choice_action_row(has_double=False):
     hit = Button(
-        custom_id=Choice.HIT.value,
+        custom_id=Choice.HIT,
         style=ButtonStyle.PRIMARY,
         label="Hit"
     )
     stand = Button(
-        custom_id=Choice.STAND.value,
+        custom_id=Choice.STAND,
         style=ButtonStyle.SECONDARY,
         label="Stand"
     )
     double = Button(
-        custom_id=Choice.DOUBLE.value,
+        custom_id=Choice.DOUBLE,
         style=ButtonStyle.DANGER,
         label="Double"
     )
@@ -147,11 +147,11 @@ async def blackjack(ctx: SlashContext, bet: int):
             return
 
         match component_ctx.custom_id:
-            case Choice.HIT.value:
+            case Choice.HIT:
                 blackjack.hit()
-            case Choice.STAND.value:
+            case Choice.STAND:
                 blackjack.stand()
-            case Choice.DOUBLE.value:
+            case Choice.DOUBLE:
                 if not can_player_bet(ctx, bet, do_withdraw=True):
                     await ctx.send(INSUFFICIENT_FUNDS_MSG, ephemeral=True)
                     blackjack.can_double = False
