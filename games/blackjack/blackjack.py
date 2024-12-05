@@ -8,6 +8,22 @@ class Outcome(Enum):
     LOSE = 2
     DRAW = 3
 
+
+def get_hand_value(deck: list[Card]) -> int:
+    ace_count = 0
+    total = 0
+    for card in deck:
+        total += card.value
+        if card.rank == Rank.ACE:
+            ace_count += 1
+
+    while ace_count > 0 and total + 10 <= 21:
+        total += 10
+        ace_count -= 1
+
+    return total
+
+
 class Blackjack:
     WIN_MULTIPLIER = 2
     BLACKJACK_MULTIPLIER = 2.5
@@ -30,27 +46,13 @@ class Blackjack:
         shuffle(deck)
         return deck
 
-    def __get_hand_value(self, deck: list[Card]) -> int:
-        ace_count = 0
-        total = 0
-        for card in deck:
-            total += card.value
-            if card.rank == Rank.ACE:
-                ace_count += 1
-
-        while ace_count > 0 and total + 10 <= 21:
-            total += 10
-            ace_count -= 1
-
-        return total
-
     @property
     def player_value(self) -> int:
-        return self.__get_hand_value(self.player_hand)
+        return get_hand_value(self.player_hand)
 
     @property
     def dealer_value(self) -> int:
-        return self.__get_hand_value(self.dealer_hand)
+        return get_hand_value(self.dealer_hand)
 
     @property
     def dealer_first_card(self) -> Card | None:
