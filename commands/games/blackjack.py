@@ -1,6 +1,6 @@
 from asyncio import exceptions
 from interactions import InteractionContext, Button, ButtonStyle, ActionRow, \
-    Client, ComponentContext, slash_command, SlashContext
+    Client, ComponentContext, slash_command, SlashContext, Message
 from enum import Enum
 from interactions.api.events import Component
 
@@ -37,9 +37,8 @@ def get_choice_action_row(has_double=False):
 
     return [action_row]
 
-def get_game_update_message(userId: str, blackjack: Blackjack) -> str:
-    user_mention = f"<@{userId}>"
-
+def get_game_message_content(ctx: SlashContext, blackjack: Blackjack) -> str:
+    user_mention = f"<@{str(ctx.author.id)}>"
     message = (
         "### Blackjack",
         f"{user_mention}'s game",
@@ -50,8 +49,20 @@ def get_game_update_message(userId: str, blackjack: Blackjack) -> str:
         *map(lambda card: f"- {card}", blackjack.player_hand),
         f"your current value is: {blackjack.player_value}"
     )
-
     return "\n".join(message)
+
+async def get_initial_message(ctx: SlashContext, blackjack: Blackjack) -> Message:
+    return await ctx.send(
+        get_game_message_content(ctx, blackjack),
+        components=get_choice_action_row(has_double=blackjack.can_double)
+    )
+
+async def update_game_message(ctx: SlashContext, msg: Message, blackjack: Blackjack) -> None:
+    await ctx.edit(
+        msg,
+        content=get_game_message_content(ctx, blackjack),
+        components=get_choice_action_row(has_double=blackjack.can_double)
+    )
 
 def get_final_game_update_message(userId: str, blackjack: Blackjack) -> str:
     user_mention = f"<@{userId}>"
@@ -91,15 +102,15 @@ def get_final_game_update_message(userId: str, blackjack: Blackjack) -> str:
 
     return "\n".join(message)
 
-async def get_component_ctx(bot: Client, action_row, user_id: str) -> None | ComponentContext:
+async def get_component_ctx(ctx: SlashContext, action_row) -> None | ComponentContext:
     async def same_user_check(component: Component):
-        if str(component.ctx.author.id) == user_id:
+        if component.ctx.author.id == ctx.author.id:
             return True
         await component.ctx.edit_origin()
         return False
 
     try:
-        used_component: Component = await bot.wait_for_component(
+        used_component: Component = await ctx.bot.wait_for_component(
             components=action_row,
             timeout=30,
             check=same_user_check
@@ -107,6 +118,7 @@ async def get_component_ctx(bot: Client, action_row, user_id: str) -> None | Com
     except exceptions.TimeoutError as e:
         return None
     else:
+        await used_component.ctx.edit_origin()
         return used_component.ctx
 
 
@@ -122,18 +134,14 @@ async def blackjack(ctx: SlashContext, bet: int):
         await ctx.send(INSUFFICIENT_FUNDS_MSG, ephemeral=True)
         return
 
-    bot: Client = ctx.bot
     user_id = str(ctx.author.id)
     blackjack = Blackjack(bet)
 
     blackjack.start()
-    message = await ctx.send(
-        get_game_update_message(user_id, blackjack),
-        components=get_choice_action_row(has_double=blackjack.can_double)
-    )
+    message = await get_initial_message(ctx, blackjack)
 
     while blackjack.outcome is None:
-        component_ctx = await get_component_ctx(bot, get_choice_action_row(has_double=blackjack.can_double), user_id)
+        component_ctx = await get_component_ctx(ctx, get_choice_action_row(has_double=blackjack.can_double))
         if component_ctx is None:
             await message.edit(content="You failed to reply in time", components=[])
             return
@@ -150,8 +158,7 @@ async def blackjack(ctx: SlashContext, bet: int):
                 else:
                     blackjack.double()
 
-
-        await component_ctx.edit_origin(content=get_game_update_message(user_id, blackjack), components=get_choice_action_row(has_double=blackjack.can_double))
+        await update_game_message(ctx, message, blackjack)
 
     await ctx.edit(message, components=[])
 
