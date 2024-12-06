@@ -1,6 +1,6 @@
 from asyncio import exceptions
-from interactions import InteractionContext, Button, ButtonStyle, ActionRow, \
-    Client, ComponentContext, slash_command, SlashContext, Message
+from interactions import Button, ButtonStyle, ActionRow, \
+    ComponentContext, slash_command, SlashContext, Message
 from enum import StrEnum
 from interactions.api.events import Component
 
