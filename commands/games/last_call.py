@@ -1,5 +1,9 @@
+from asyncio import sleep
+
 from interactions import slash_command, SlashContext, Button, ButtonStyle, listen, Message
 from interactions.api.events import Component
+
+from games.last_call import Outcome
 from games.last_call.last_call import LastCall
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION
 
@@ -21,7 +25,7 @@ def get_in_game_message_content(ctx: SlashContext, last_call_game: LastCall) -> 
         "### Last Call",
         f"<@{ctx.author.id}>'s game",
         "",
-        "😎",
+        "🙂",
         f"__potential win__: {last_call_game.potential_winnings} talan"
     )
     return "\n".join(content)
@@ -62,12 +66,31 @@ async def edit_to_lose_message(ctx: SlashContext, msg: Message) -> None:
     options=[BET_OPTION]
 )
 async def last_call(ctx: SlashContext, bet: int):
-    msg = await ctx.send("command not yet implemented, ctx_id={}".format(ctx.id), components=cash_out_button())
     last_call_game = LastCall(bet, CRASH_ODDS)
+    msg = await get_initial_message(ctx, last_call_game)
+
+    # listen to the component for the game
     @listen(Component)
     async def on_component(event: Component):
-        if event.ctx.message.id == msg.id:
-            await event.ctx.send("hehe, you pressed me")
-            await msg.edit(components=cash_out_button(True))
+        is_same_message = event.ctx.message.id == msg.id
+        is_same_user = event.ctx.author.id == ctx.author.id
 
+        if not is_same_user or not is_same_message:
+            await event.ctx.edit_origin()
+            return
+
+        last_call_game.cash_out()
+        await event.ctx.edit_origin()
     ctx.bot.add_listener(on_component)
+    # == listener added to bot ==
+
+    while last_call_game.outcome is None:
+        last_call_game.step()
+        await edit_game_message(ctx, msg, last_call_game)
+        await sleep(1.0)
+
+    match last_call_game.outcome:
+        case Outcome.CRASH:
+            await edit_to_lose_message(ctx, msg)
+        case Outcome.CASH_OUT:
+            await edit_to_win_message(ctx, msg, last_call_game)
