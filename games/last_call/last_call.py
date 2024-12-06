@@ -31,7 +31,7 @@ class LastCall:
             self.outcome = Outcome.CASH_OUT
 
     @property
-    def winnings(self):
+    def winnings(self) -> int:
         match self.outcome:
             case Outcome.CASH_OUT:
                 return self.potential_winnings
@@ -41,7 +41,7 @@ class LastCall:
                 return 0
 
     @property
-    def potential_winnings(self):
+    def potential_winnings(self) -> int:
         survival_odd = (1 - self.odds) ** self.num_of_steps
         bet_multiplier = 1 / survival_odd
         return self.bet * bet_multiplier
