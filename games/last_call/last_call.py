@@ -42,6 +42,8 @@ class LastCall:
 
     @property
     def potential_winnings(self) -> int:
+        if self.num_of_steps is None:
+            return 0
         survival_odd = (1 - self.odds) ** self.num_of_steps
         bet_multiplier = 1 / survival_odd
-        return self.bet * bet_multiplier
+        return int(self.bet * bet_multiplier)
