@@ -1,6 +1,6 @@
 from interactions import slash_command, SlashContext
 
-from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION
+from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
 
 
 @slash_command(
@@ -11,4 +11,6 @@ from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION
     options=[BET_OPTION]
 )
 async def rps(ctx: SlashContext, bet: int):
-    pass
+    if not can_player_bet(ctx, bet, do_withdraw=True):
+        await ctx.send("You do not have enough talan to place this bet.", ephemeral=True)
+        return
