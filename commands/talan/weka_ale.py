@@ -38,6 +38,7 @@ async def get_owner_confirmation(ctx: SlashContext) -> None | str:
     try:
         used_component: Component = await ctx.bot.wait_for_component(
             components=ACTION_ROW,
+            messages=msg,
             timeout=60,
             check=is_same_user_check
         )
