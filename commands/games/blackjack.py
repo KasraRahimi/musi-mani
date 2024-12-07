@@ -31,7 +31,7 @@ def get_choice_action_row(has_double=False):
         custom_id=Choice.DOUBLE,
         style=ButtonStyle.DANGER,
         label="Double",
-        emoji='👆',
+        emoji='☝️',
         disabled=not has_double
     )
     action_row = ActionRow(hit, stand, double)
