@@ -102,7 +102,7 @@ def get_final_game_update_message(userId: str, blackjack: Blackjack) -> str:
 
     return "\n".join(message)
 
-async def get_component_ctx(ctx: SlashContext, action_row) -> None | ComponentContext:
+async def get_component_ctx(ctx: SlashContext, msg: Message, action_row) -> None | ComponentContext:
     async def same_user_check(component: Component):
         if component.ctx.author.id == ctx.author.id:
             return True
@@ -111,6 +111,7 @@ async def get_component_ctx(ctx: SlashContext, action_row) -> None | ComponentCo
 
     try:
         used_component: Component = await ctx.bot.wait_for_component(
+            messages=msg,
             components=action_row,
             timeout=30,
             check=same_user_check
@@ -141,7 +142,7 @@ async def blackjack(ctx: SlashContext, bet: int):
     message = await get_initial_message(ctx, blackjack)
 
     while blackjack.outcome is None:
-        component_ctx = await get_component_ctx(ctx, get_choice_action_row(has_double=blackjack.can_double))
+        component_ctx = await get_component_ctx(ctx, message, get_choice_action_row(has_double=blackjack.can_double))
         if component_ctx is None:
             await message.edit(content="You failed to reply in time", components=[])
             return
