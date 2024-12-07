@@ -18,23 +18,23 @@ def get_choice_action_row(has_double=False):
     hit = Button(
         custom_id=Choice.HIT,
         style=ButtonStyle.PRIMARY,
-        label="Hit"
+        label="Hit",
+        emoji='👇'
     )
     stand = Button(
         custom_id=Choice.STAND,
         style=ButtonStyle.SECONDARY,
-        label="Stand"
+        label="Stand",
+        emoji='🤚'
     )
     double = Button(
         custom_id=Choice.DOUBLE,
         style=ButtonStyle.DANGER,
-        label="Double"
+        label="Double",
+        emoji='👆',
+        disabled=not has_double
     )
-    if has_double:
-        action_row = ActionRow(hit, stand, double)
-    else:
-        action_row = ActionRow(hit, stand)
-
+    action_row = ActionRow(hit, stand, double)
     return [action_row]
 
 def get_game_message_content(ctx: SlashContext, blackjack: Blackjack) -> str:
