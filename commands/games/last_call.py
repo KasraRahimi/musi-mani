@@ -91,6 +91,8 @@ async def last_call(ctx: SlashContext, bet: int):
 
     while last_call_game.outcome is None:
         last_call_game.step()
+        if last_call_game.outcome is not None:
+            break
         await edit_game_message(ctx, msg, last_call_game)
         await sleep(1.0)
 
