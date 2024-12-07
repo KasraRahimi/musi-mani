@@ -78,10 +78,6 @@ async def last_call(ctx: SlashContext, bet: int):
     # listen to the component for the game
     @component_callback(get_button_id(BUTTON_ID, ctx))
     async def on_component(cmp_ctx: ComponentContext):
-        print("component event interaction")
-        if cmp_ctx.resolved:
-            return
-
         is_same_message = cmp_ctx.message.id == msg.id
         is_same_user = cmp_ctx.author.id == ctx.author.id
         if not is_same_user or not is_same_message:
