@@ -1,19 +1,21 @@
 from asyncio import sleep
 
-from interactions import slash_command, SlashContext, Button, ButtonStyle, listen, Message
+from interactions import slash_command, SlashContext, Button, ButtonStyle, listen, Message, Snowflake, SnowflakeObject, \
+    component_callback, ComponentContext
 from interactions.api.events import Component
 
+from database import BotUser
 from games.last_call import Outcome
 from games.last_call.last_call import LastCall
-from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION
-
+from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
+from ..utils import get_button_id, ButtonIdInfo
 
 BUTTON_ID = 'cash_out'
 CRASH_ODDS = 1 / 7
 
-def cash_out_button(is_disabled: bool=False):
+def cash_out_button(ctx: SlashContext, is_disabled: bool=False):
     return Button(
-        custom_id=BUTTON_ID,
+        custom_id=get_button_id(BUTTON_ID, ctx),
         style=ButtonStyle.PRIMARY,
         label="Cash out",
         emoji='💰',
@@ -31,10 +33,10 @@ def get_in_game_message_content(ctx: SlashContext, last_call_game: LastCall) -> 
     return "\n".join(content)
 
 async def get_initial_message(ctx: SlashContext, last_call_game: LastCall) -> Message:
-    return await ctx.send(get_in_game_message_content(ctx, last_call_game), components=cash_out_button())
+    return await ctx.send(get_in_game_message_content(ctx, last_call_game), components=cash_out_button(ctx))
 
 async def edit_game_message(ctx: SlashContext, msg: Message, last_call_game: LastCall) -> None:
-    await ctx.edit(msg, content=get_in_game_message_content(ctx, last_call_game), components=cash_out_button())
+    await ctx.edit(msg, content=get_in_game_message_content(ctx, last_call_game))
 
 async def edit_to_win_message(ctx: SlashContext, msg: Message, last_call_game: LastCall) -> None:
     content = (
@@ -45,7 +47,7 @@ async def edit_to_win_message(ctx: SlashContext, msg: Message, last_call_game: L
         f"You just cashed out and won **{last_call_game.winnings}** talan!!"
     )
     content = "\n".join(content)
-    await ctx.edit(msg, content=content, components=cash_out_button(True))
+    await ctx.edit(msg, content=content, components=cash_out_button(ctx, True))
 
 async def edit_to_lose_message(ctx: SlashContext, msg: Message) -> None:
     content = (
@@ -56,7 +58,7 @@ async def edit_to_lose_message(ctx: SlashContext, msg: Message) -> None:
         f"You just crashed and lost your bet."
     )
     content = "\n".join(content)
-    await ctx.edit(msg, content=content, components=cash_out_button(True))
+    await ctx.edit(msg, content=content, components=cash_out_button(ctx, True))
 
 @slash_command(
     name=COMMAND_NAME,
@@ -66,22 +68,29 @@ async def edit_to_lose_message(ctx: SlashContext, msg: Message) -> None:
     options=[BET_OPTION]
 )
 async def last_call(ctx: SlashContext, bet: int):
+    if not can_player_bet(ctx, bet, do_withdraw=True):
+        await ctx.send("You do not have enough talan to place this bet", ephemeral=True)
+        return
+
     last_call_game = LastCall(bet, CRASH_ODDS)
     msg = await get_initial_message(ctx, last_call_game)
 
     # listen to the component for the game
-    @listen(Component)
-    async def on_component(event: Component):
-        is_same_message = event.ctx.message.id == msg.id
-        is_same_user = event.ctx.author.id == ctx.author.id
+    @component_callback(get_button_id(BUTTON_ID, ctx))
+    async def on_component(cmp_ctx: ComponentContext):
+        print("component event interaction")
+        if cmp_ctx.resolved:
+            return
 
+        is_same_message = cmp_ctx.message.id == msg.id
+        is_same_user = cmp_ctx.author.id == ctx.author.id
         if not is_same_user or not is_same_message:
-            await event.ctx.edit_origin()
+            await cmp_ctx.edit_origin()
             return
 
         last_call_game.cash_out()
-        await event.ctx.edit_origin()
-    ctx.bot.add_listener(on_component)
+        await cmp_ctx.edit_origin()
+    ctx.bot.add_component_callback(on_component)
     # == listener added to bot ==
 
     while last_call_game.outcome is None:
@@ -93,4 +102,5 @@ async def last_call(ctx: SlashContext, bet: int):
         case Outcome.CRASH:
             await edit_to_lose_message(ctx, msg)
         case Outcome.CASH_OUT:
+            BotUser(str(ctx.author.id)).deposit(last_call_game.winnings)
             await edit_to_win_message(ctx, msg, last_call_game)
