@@ -1,7 +1,6 @@
 from enum import StrEnum
 from random import randint
-
-from interactions import slash_command, SlashContext
+from interactions import slash_command, SlashContext, Message, ActionRow, Button, ButtonStyle
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
 
 class Choice(StrEnum):
@@ -13,6 +12,29 @@ class Outcome(StrEnum):
     WIN = 'win',
     LOSE = 'lose',
     TIE = 'tie'
+
+def get_action_row() -> list[ActionRow]:
+    return [ActionRow(
+        Button(
+            custom_id=Choice.ROCK,
+            emoji='🪨',
+            label=Choice.ROCK.capitalize(),
+            style=ButtonStyle.PRIMARY
+        ),
+        Button(
+            custom_id=Choice.PAPER,
+            emoji='📄',
+            label=Choice.PAPER.capitalize(),
+            style=ButtonStyle.GREEN,
+        ),
+        Button(
+            custom_id=Choice.SCISSORS,
+            emoji='✂️',
+            label=Choice.SCISSORS.capitalize(),
+            style=ButtonStyle.SECONDARY
+        )
+    )]
+
 
 def outcome_for_rock(other: Choice) -> Outcome:
     match other:
@@ -59,6 +81,19 @@ def get_random_choice() -> Choice:
             return Choice.SCISSORS
         case 3:
             return Choice.ROCK
+
+def get_message_title(ctx: SlashContext) -> str:
+    user_id = str(ctx.author.id)
+    content = (
+        "### Rock Paper Scissors",
+        f"<@{user_id}>'s game",
+        ""
+    )
+    return "\n".join(content)
+
+async def get_initial_message(ctx: SlashContext) -> Message:
+    pass
+
 
 @slash_command(
     name=COMMAND_NAME,
