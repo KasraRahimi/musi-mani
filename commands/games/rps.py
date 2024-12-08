@@ -1,4 +1,6 @@
 from enum import StrEnum
+from random import randint
+
 from interactions import slash_command, SlashContext
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
 
@@ -39,6 +41,24 @@ def outcome_for_scissors(other: Choice) -> Outcome:
         case Choice.ROCK:
             return Outcome.LOSE
 
+def player_1_outcome(player_1_choice: Choice, player_2_choice: Choice) -> Outcome:
+    match player_1_choice:
+        case Choice.PAPER:
+            return outcome_for_paper(player_2_choice)
+        case Choice.SCISSORS:
+            return outcome_for_scissors(player_2_choice)
+        case Choice.ROCK:
+            return outcome_for_rock(player_2_choice)
+
+def get_random_choice() -> Choice:
+    random_number = randint(1, 3)
+    match random_number:
+        case 1:
+            return Choice.PAPER
+        case 2:
+            return Choice.SCISSORS
+        case 3:
+            return Choice.ROCK
 
 @slash_command(
     name=COMMAND_NAME,
