@@ -1,7 +1,12 @@
+from asyncio import exceptions
 from enum import StrEnum
 from random import randint
 from interactions import slash_command, SlashContext, Message, ActionRow, Button, ButtonStyle
+from interactions.api.events import Component
+
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
+
+WIN_MULTIPLIER = 2
 
 class Choice(StrEnum):
     ROCK = 'rock',
@@ -13,23 +18,32 @@ class Outcome(StrEnum):
     LOSE = 'lose',
     TIE = 'tie'
 
+def get_emoji_from_choice(choice: Choice) -> str:
+    match choice:
+        case Choice.ROCK:
+            return '🪨'
+        case Choice.PAPER:
+            return '📄'
+        case Choice.SCISSORS:
+            return '✂️'
+
 def get_action_row() -> list[ActionRow]:
     return [ActionRow(
         Button(
             custom_id=Choice.ROCK,
-            emoji='🪨',
+            emoji=get_emoji_from_choice(Choice.ROCK),
             label=Choice.ROCK.capitalize(),
             style=ButtonStyle.PRIMARY
         ),
         Button(
             custom_id=Choice.PAPER,
-            emoji='📄',
+            emoji=get_emoji_from_choice(Choice.PAPER),
             label=Choice.PAPER.capitalize(),
             style=ButtonStyle.GREEN,
         ),
         Button(
             custom_id=Choice.SCISSORS,
-            emoji='✂️',
+            emoji=get_emoji_from_choice(Choice.SCISSORS),
             label=Choice.SCISSORS.capitalize(),
             style=ButtonStyle.SECONDARY
         )
@@ -92,7 +106,46 @@ def get_message_title(ctx: SlashContext) -> str:
     return "\n".join(content)
 
 async def get_initial_message(ctx: SlashContext) -> Message:
-    pass
+    content = (
+        get_message_title(ctx),
+        "Pick an option",
+    )
+    content = '\n'.join(content)
+    await ctx.send(content, components=get_action_row())
+
+async def get_player_choice(ctx: SlashContext, msg: Message) -> Choice | None:
+    async def check(component_event: Component) -> bool:
+        if component_event.ctx.author.id == ctx.author.id:
+            return True
+        else:
+            await component_event.ctx.edit_origin()
+            return False
+
+    try:
+        used_component: Component = await ctx.bot.wait_for_component(components=get_action_row(), messages=msg, timeout=30)
+    except exceptions.TimeoutError:
+        return None
+    else:
+        return Choice(used_component.ctx.custom_id)
+
+async def handle_game_end(
+        ctx: SlashContext,
+        msg: Message,
+        bot_choice: Choice,
+        outcome: Outcome,
+        bet: int
+) -> None:
+    content = [get_message_title(ctx)]
+    winnings = 0
+    match outcome:
+        case Outcome.WIN:
+            winnings = bet * WIN_MULTIPLIER
+            content.append(f"You won! You've been awarded {winnings} talan!")
+        case Outcome.LOSE:
+            pass
+        case Outcome.TIE:
+            pass
+
 
 
 @slash_command(
