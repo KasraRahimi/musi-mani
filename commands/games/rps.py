@@ -112,7 +112,7 @@ async def get_initial_message(ctx: SlashContext) -> Message:
         "Pick an option",
     )
     content = '\n'.join(content)
-    await ctx.send(content, components=get_action_row())
+    return await ctx.send(content, components=get_action_row())
 
 async def get_player_choice(ctx: SlashContext, msg: Message) -> Choice | None:
     async def check(component_event: Component) -> bool:
@@ -127,7 +127,12 @@ async def get_player_choice(ctx: SlashContext, msg: Message) -> Choice | None:
     except exceptions.TimeoutError:
         return None
     else:
-        await used_component.ctx.edit_origin(components=[])
+        content = (
+            get_message_title(ctx),
+            "Waiting for bot choice..."
+        )
+        content = '\n'.join(content)
+        await used_component.ctx.edit_origin(content=content, components=[])
         return Choice(used_component.ctx.custom_id)
 
 async def handle_game_end(
@@ -171,7 +176,7 @@ async def rps(ctx: SlashContext, bet: int):
 
     msg = await get_initial_message(ctx)
     player_choice = await get_player_choice(ctx, msg)
-    sleep(1.0)
+    await sleep(1.0)
 
     if player_choice is None:
         await ctx.edit(msg, content="You failed to reply in time", components=[])
