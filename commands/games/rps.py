@@ -12,6 +12,33 @@ class Outcome(StrEnum):
     LOSE = 'lose',
     TIE = 'tie'
 
+def outcome_for_rock(other: Choice) -> Outcome:
+    match other:
+        case Choice.PAPER:
+            return Outcome.LOSE
+        case Choice.SCISSORS:
+            return Outcome.WIN
+        case Choice.ROCK:
+            return Outcome.TIE
+
+def outcome_for_paper(other: Choice) -> Outcome:
+    match other:
+        case Choice.PAPER:
+            return Outcome.TIE
+        case Choice.SCISSORS:
+            return Outcome.LOSE
+        case Choice.ROCK:
+            return Outcome.WIN
+
+def outcome_for_scissors(other: Choice) -> Outcome:
+    match other:
+        case Choice.PAPER:
+            return Outcome.WIN
+        case Choice.SCISSORS:
+            return Outcome.TIE
+        case Choice.ROCK:
+            return Outcome.LOSE
+
 
 @slash_command(
     name=COMMAND_NAME,
