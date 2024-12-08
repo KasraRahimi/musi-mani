@@ -1,4 +1,4 @@
-from asyncio import exceptions
+from asyncio import exceptions, sleep
 from enum import StrEnum
 from random import randint
 from interactions import slash_command, SlashContext, Message, ActionRow, Button, ButtonStyle
@@ -127,6 +127,7 @@ async def get_player_choice(ctx: SlashContext, msg: Message) -> Choice | None:
     except exceptions.TimeoutError:
         return None
     else:
+        await used_component.ctx.edit_origin(components=[])
         return Choice(used_component.ctx.custom_id)
 
 async def handle_game_end(
@@ -167,3 +168,15 @@ async def rps(ctx: SlashContext, bet: int):
     if not can_player_bet(ctx, bet, do_withdraw=True):
         await ctx.send("You do not have enough talan to place this bet.", ephemeral=True)
         return
+
+    msg = await get_initial_message(ctx)
+    player_choice = await get_player_choice(ctx, msg)
+    sleep(1.0)
+
+    if player_choice is None:
+        await ctx.edit(msg, content="You failed to reply in time", components=[])
+        return
+
+    bot_choice = get_random_choice()
+    game_outcome = player_1_outcome(player_choice, bot_choice)
+    await handle_game_end(ctx, msg, bot_choice, game_outcome, bet)
