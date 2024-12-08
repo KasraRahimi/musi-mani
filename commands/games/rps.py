@@ -4,6 +4,7 @@ from random import randint
 from interactions import slash_command, SlashContext, Message, ActionRow, Button, ButtonStyle
 from interactions.api.events import Component
 
+from database import BotUser
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
 
 WIN_MULTIPLIER = 2
@@ -135,16 +136,23 @@ async def handle_game_end(
         outcome: Outcome,
         bet: int
 ) -> None:
-    content = [get_message_title(ctx)]
+    content = [get_message_title(ctx), f"The bot picked {bot_choice} ({get_emoji_from_choice(bot_choice)})"]
     winnings = 0
+
     match outcome:
         case Outcome.WIN:
             winnings = bet * WIN_MULTIPLIER
             content.append(f"You won! You've been awarded {winnings} talan!")
         case Outcome.LOSE:
-            pass
+            content.append(f"You lost.")
         case Outcome.TIE:
-            pass
+            winnings = bet
+            content.append(f"It's a tie. You've been given back {winnings} talan")
+
+    BotUser(str(ctx.author.id)).deposit(winnings)
+
+    content = '\n'.join(content)
+    await ctx.edit(msg, content=content, components=[])
 
 
 
