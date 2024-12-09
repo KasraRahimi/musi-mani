@@ -14,11 +14,6 @@ class Choice(StrEnum):
     PAPER = 'paper',
     SCISSORS = 'scissors',
 
-class OldOutcome(StrEnum):
-    WIN = 'win',
-    LOSE = 'lose',
-    TIE = 'tie'
-
 class Outcome(StrEnum):
     PLAYER_ONE_WIN = 'player_one_win'
     PLAYER_TWO_WIN = 'player_two_win'
@@ -121,43 +116,6 @@ def get_action_row() -> list[ActionRow]:
         )
     )]
 
-
-def outcome_for_rock(other: Choice) -> OldOutcome:
-    match other:
-        case Choice.PAPER:
-            return OldOutcome.LOSE
-        case Choice.SCISSORS:
-            return OldOutcome.WIN
-        case Choice.ROCK:
-            return OldOutcome.TIE
-
-def outcome_for_paper(other: Choice) -> OldOutcome:
-    match other:
-        case Choice.PAPER:
-            return OldOutcome.TIE
-        case Choice.SCISSORS:
-            return OldOutcome.LOSE
-        case Choice.ROCK:
-            return OldOutcome.WIN
-
-def outcome_for_scissors(other: Choice) -> OldOutcome:
-    match other:
-        case Choice.PAPER:
-            return OldOutcome.WIN
-        case Choice.SCISSORS:
-            return OldOutcome.TIE
-        case Choice.ROCK:
-            return OldOutcome.LOSE
-
-def player_1_outcome(player_1_choice: Choice, player_2_choice: Choice) -> OldOutcome:
-    match player_1_choice:
-        case Choice.PAPER:
-            return outcome_for_paper(player_2_choice)
-        case Choice.SCISSORS:
-            return outcome_for_scissors(player_2_choice)
-        case Choice.ROCK:
-            return outcome_for_rock(player_2_choice)
-
 def get_random_choice() -> Choice:
     random_number = randint(1, 3)
     match random_number:
@@ -206,28 +164,21 @@ async def get_player_choice(ctx: SlashContext, msg: Message) -> Choice | None:
         await used_component.ctx.edit_origin(content=content, components=[])
         return Choice(used_component.ctx.custom_id)
 
-async def handle_game_end(
-        ctx: SlashContext,
-        msg: Message,
-        bot_choice: Choice,
-        outcome: OldOutcome,
-        rps_game_state: RpsGameState,
-        bet: int
-) -> None:
-    content = [get_message_title(ctx), f"The bot picked {bot_choice} ({get_emoji_from_choice(bot_choice)})"]
-    winnings = 0
+async def handle_game_end(ctx: SlashContext, msg: Message, rps_game_state: RpsGameState) -> None:
+    content = [
+        get_message_title(ctx),
+        f"The bot picked {rps_game_state.player_two_choice} ({get_emoji_from_choice(rps_game_state.player_two_choice)})"
+    ]
 
-    match outcome:
-        case OldOutcome.WIN:
-            winnings = bet * WIN_MULTIPLIER
-            content.append(f"You won! You've been awarded {winnings} talan!")
-        case OldOutcome.LOSE:
+    match rps_game_state.outcome:
+        case Outcome.PLAYER_ONE_WIN:
+            content.append(f"You won! You've been awarded {rps_game_state.player_one_winnings} talan!")
+        case Outcome.PLAYER_TWO_WIN:
             content.append(f"You lost.")
-        case OldOutcome.TIE:
-            winnings = bet
-            content.append(f"It's a tie. You've been given back {winnings} talan")
+        case Outcome.TIE:
+            content.append(f"It's a tie. You've been given back {rps_game_state.player_one_winnings} talan")
 
-    BotUser(str(ctx.author.id)).deposit(winnings)
+    BotUser(str(ctx.author.id)).deposit(rps_game_state.player_one_winnings)
 
     content = '\n'.join(content)
     await ctx.edit(msg, content=content, components=[])
@@ -258,5 +209,4 @@ async def rps(ctx: SlashContext, bet: int):
 
     bot_choice = get_random_choice()
     rps_game_state.player_two_choice = bot_choice
-    game_outcome = player_1_outcome(player_choice, bot_choice)
-    await handle_game_end(ctx, msg, bot_choice, game_outcome, bet)
+    await handle_game_end(ctx, msg, rps_game_state)
