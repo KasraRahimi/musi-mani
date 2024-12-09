@@ -28,6 +28,12 @@ class Outcome(StrEnum):
 class RpsGameState:
     player_one_choice: Choice | None = None
     player_two_choice: Choice | None = None
+    bet: int = 0
+
+    __WIN_MULTIPLIER = 2
+
+    def __init__(self, bet: int):
+        self.bet = bet
 
     @property
     def outcome(self) -> Outcome | None:
@@ -59,6 +65,29 @@ class RpsGameState:
                     case Choice.PAPER:
                         return Outcome.PLAYER_ONE_WIN
 
+    @property
+    def player_one_winnings(self) -> int:
+        match self.outcome:
+            case Outcome.PLAYER_ONE_WIN:
+                return self.bet ** self.__WIN_MULTIPLIER
+            case Outcome.TIE:
+                return self.bet
+            case Outcome.PLAYER_TWO_WIN:
+                return 0
+            case _:
+                return 0
+
+    @property
+    def player_two_winnings(self) -> int:
+        match self.outcome:
+            case Outcome.PLAYER_ONE_WIN:
+                return 0
+            case Outcome.TIE:
+                return self.bet
+            case Outcome.PLAYER_TWO_WIN:
+                return self.bet ** self.__WIN_MULTIPLIER
+            case _:
+                return 0
 
 
 def get_emoji_from_choice(choice: Choice) -> str:
@@ -182,6 +211,7 @@ async def handle_game_end(
         msg: Message,
         bot_choice: Choice,
         outcome: OldOutcome,
+        rps_game_state: RpsGameState,
         bet: int
 ) -> None:
     content = [get_message_title(ctx), f"The bot picked {bot_choice} ({get_emoji_from_choice(bot_choice)})"]
@@ -216,14 +246,17 @@ async def rps(ctx: SlashContext, bet: int):
         await ctx.send("You do not have enough talan to place this bet.", ephemeral=True)
         return
 
+    rps_game_state = RpsGameState()
     msg = await get_initial_message(ctx)
+
     player_choice = await get_player_choice(ctx, msg)
     await sleep(1.0)
-
     if player_choice is None:
         await ctx.edit(msg, content="You failed to reply in time", components=[])
         return
+    rps_game_state.player_one_choice = player_choice
 
     bot_choice = get_random_choice()
+    rps_game_state.player_two_choice = bot_choice
     game_outcome = player_1_outcome(player_choice, bot_choice)
     await handle_game_end(ctx, msg, bot_choice, game_outcome, bet)
