@@ -152,7 +152,12 @@ async def get_player_choice(ctx: SlashContext, msg: Message) -> Choice | None:
             return False
 
     try:
-        used_component: Component = await ctx.bot.wait_for_component(components=get_action_row(), messages=msg, timeout=30)
+        used_component: Component = await ctx.bot.wait_for_component(
+            components=get_action_row(),
+            messages=msg,
+            timeout=30,
+            check=check
+        )
     except exceptions.TimeoutError:
         return None
     else:
