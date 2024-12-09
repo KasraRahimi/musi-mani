@@ -3,7 +3,7 @@ from enum import StrEnum
 from random import randint
 from interactions import slash_command, SlashContext, Message, ActionRow, Button, ButtonStyle
 from interactions.api.events import Component
-
+from dataclasses import dataclass
 from database import BotUser
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
 
@@ -14,10 +14,52 @@ class Choice(StrEnum):
     PAPER = 'paper',
     SCISSORS = 'scissors',
 
-class Outcome(StrEnum):
+class OldOutcome(StrEnum):
     WIN = 'win',
     LOSE = 'lose',
     TIE = 'tie'
+
+class Outcome(StrEnum):
+    PLAYER_ONE_WIN = 'player_one_win'
+    PLAYER_TWO_WIN = 'player_two_win'
+    TIE = 'tie'
+
+@dataclass
+class RpsGameState:
+    player_one_choice: Choice | None = None
+    player_two_choice: Choice | None = None
+
+    @property
+    def outcome(self) -> Outcome | None:
+        if self.player_one_choice is None or self.player_two_choice is None:
+            return None
+
+        if self.player_one_choice == self.player_two_choice:
+            return Outcome.TIE
+
+        match (self.player_one_choice, self.player_two_choice):
+            case (Choice.ROCK, second_choice):
+                match second_choice:
+                    case Choice.PAPER:
+                        return Outcome.PLAYER_TWO_WIN
+                    case Choice.SCISSORS:
+                        return  Outcome.PLAYER_ONE_WIN
+
+            case (Choice.PAPER, second_choice):
+                match second_choice:
+                    case Choice.ROCK:
+                        return Outcome.PLAYER_ONE_WIN
+                    case Choice.SCISSORS:
+                        return Outcome.PLAYER_TWO_WIN
+
+            case (Choice.SCISSORS, second_choice):
+                match second_choice:
+                    case Choice.ROCK:
+                        return Outcome.PLAYER_TWO_WIN
+                    case Choice.PAPER:
+                        return Outcome.PLAYER_ONE_WIN
+
+
 
 def get_emoji_from_choice(choice: Choice) -> str:
     match choice:
@@ -51,34 +93,34 @@ def get_action_row() -> list[ActionRow]:
     )]
 
 
-def outcome_for_rock(other: Choice) -> Outcome:
+def outcome_for_rock(other: Choice) -> OldOutcome:
     match other:
         case Choice.PAPER:
-            return Outcome.LOSE
+            return OldOutcome.LOSE
         case Choice.SCISSORS:
-            return Outcome.WIN
+            return OldOutcome.WIN
         case Choice.ROCK:
-            return Outcome.TIE
+            return OldOutcome.TIE
 
-def outcome_for_paper(other: Choice) -> Outcome:
+def outcome_for_paper(other: Choice) -> OldOutcome:
     match other:
         case Choice.PAPER:
-            return Outcome.TIE
+            return OldOutcome.TIE
         case Choice.SCISSORS:
-            return Outcome.LOSE
+            return OldOutcome.LOSE
         case Choice.ROCK:
-            return Outcome.WIN
+            return OldOutcome.WIN
 
-def outcome_for_scissors(other: Choice) -> Outcome:
+def outcome_for_scissors(other: Choice) -> OldOutcome:
     match other:
         case Choice.PAPER:
-            return Outcome.WIN
+            return OldOutcome.WIN
         case Choice.SCISSORS:
-            return Outcome.TIE
+            return OldOutcome.TIE
         case Choice.ROCK:
-            return Outcome.LOSE
+            return OldOutcome.LOSE
 
-def player_1_outcome(player_1_choice: Choice, player_2_choice: Choice) -> Outcome:
+def player_1_outcome(player_1_choice: Choice, player_2_choice: Choice) -> OldOutcome:
     match player_1_choice:
         case Choice.PAPER:
             return outcome_for_paper(player_2_choice)
@@ -139,19 +181,19 @@ async def handle_game_end(
         ctx: SlashContext,
         msg: Message,
         bot_choice: Choice,
-        outcome: Outcome,
+        outcome: OldOutcome,
         bet: int
 ) -> None:
     content = [get_message_title(ctx), f"The bot picked {bot_choice} ({get_emoji_from_choice(bot_choice)})"]
     winnings = 0
 
     match outcome:
-        case Outcome.WIN:
+        case OldOutcome.WIN:
             winnings = bet * WIN_MULTIPLIER
             content.append(f"You won! You've been awarded {winnings} talan!")
-        case Outcome.LOSE:
+        case OldOutcome.LOSE:
             content.append(f"You lost.")
-        case Outcome.TIE:
+        case OldOutcome.TIE:
             winnings = bet
             content.append(f"It's a tie. You've been given back {winnings} talan")
 
