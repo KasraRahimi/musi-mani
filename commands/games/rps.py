@@ -165,9 +165,12 @@ async def get_player_choice(ctx: SlashContext, msg: Message) -> Choice | None:
         return Choice(used_component.ctx.custom_id)
 
 async def handle_game_end(ctx: SlashContext, msg: Message, rps_game_state: RpsGameState) -> None:
+    user_choice = rps_game_state.player_one_choice
+    bot_choice = rps_game_state.player_two_choice
     content = [
         get_message_title(ctx),
-        f"The bot picked {rps_game_state.player_two_choice} ({get_emoji_from_choice(rps_game_state.player_two_choice)})"
+        f"You picked {user_choice} ({get_emoji_from_choice(user_choice)})",
+        f"The bot picked {bot_choice} ({get_emoji_from_choice(bot_choice)})"
     ]
 
     match rps_game_state.outcome:
@@ -197,7 +200,7 @@ async def rps(ctx: SlashContext, bet: int):
         await ctx.send("You do not have enough talan to place this bet.", ephemeral=True)
         return
 
-    rps_game_state = RpsGameState()
+    rps_game_state = RpsGameState(bet)
     msg = await get_initial_message(ctx)
 
     player_choice = await get_player_choice(ctx, msg)
