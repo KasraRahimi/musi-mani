@@ -1,4 +1,4 @@
-from .misc import name, ping, anonymous, help
+from .misc import name, ping, anonymous, help, profile
 from .games import blackjack, coin_toss, last_call, rps
 from .talan import balance, add_funds, give, reward, weka_ale
 
@@ -8,6 +8,7 @@ __all__ = [
     'ping',
     'anonymous',
     'help',
+    'profile',
     # games
     'blackjack',
     'coin_toss',
