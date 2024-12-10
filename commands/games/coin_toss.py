@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 
 from interactions import slash_command, SlashContext, ActionRow, Button, ButtonStyle, Message, InteractionContext
 from enum import Enum
@@ -8,8 +9,10 @@ from asyncio import sleep, exceptions
 from commands.games.constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet, \
     INSUFFICIENT_FUNDS_MSG
 from database import BotUser
+from models.game_stat import GameStat
 
 BET_MULTIPLIER = 2
+GAME_NAME = "Coin Toss"
 
 class Choice(Enum):
     HEADS = 'heads'
@@ -105,9 +108,17 @@ async def handle_end_game(ctx: SlashContext, msg: Message, player_choice: Choice
     )
     message = "\n".join(message)
 
-    if is_player_won:
-        bot_user = BotUser(str(ctx.author.id))
-        bot_user.deposit(bet * BET_MULTIPLIER)
+    payout = bet * BET_MULTIPLIER if is_player_won else 0
+    bot_user = BotUser(str(ctx.author.id))
+    bot_user.deposit(payout)
+    game_stat = GameStat(
+        name=GAME_NAME,
+        date=datetime.datetime.now(),
+        bet=bet,
+        payout=payout,
+        is_win=is_player_won
+    )
+
 
     await ctx.edit(msg, content=message)
 

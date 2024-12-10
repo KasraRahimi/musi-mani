@@ -1,3 +1,4 @@
+import datetime
 from asyncio import exceptions
 from interactions import Button, ButtonStyle, ActionRow, \
     ComponentContext, slash_command, SlashContext, Message
@@ -6,8 +7,10 @@ from interactions.api.events import Component
 
 from database import BotUser
 from games.blackjack import Blackjack, Outcome
+from models.game_stat import GameStat
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet, INSUFFICIENT_FUNDS_MSG
 
+GAME_NAME = "Blackjack"
 
 class Choice(StrEnum):
     HIT = 'hit'
@@ -165,5 +168,13 @@ async def blackjack(ctx: SlashContext, bet: int):
 
     bot_user = BotUser(user_id)
     bot_user.deposit(blackjack.winnings)
+    game_stat = GameStat(
+        name=GAME_NAME,
+        date=datetime.datetime.now(),
+        bet=bet,
+        payout=blackjack.winnings,
+        is_win=blackjack.outcome == Outcome.WIN or blackjack.outcome == Outcome.BLACKJACK
+    )
+    bot_user.add_game_stat(game_stat)
 
     await message.reply(get_final_game_update_message(user_id, blackjack))
