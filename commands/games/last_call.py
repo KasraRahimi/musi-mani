@@ -1,3 +1,4 @@
+import datetime
 from asyncio import sleep
 
 from interactions import slash_command, SlashContext, Button, ButtonStyle, listen, Message, Snowflake, SnowflakeObject, \
@@ -7,10 +8,13 @@ from interactions.api.events import Component
 from database import BotUser
 from games.last_call import Outcome
 from games.last_call.last_call import LastCall
+from models.game_stat import GameStat
+from .blackjack import GAME_NAME
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
 from ..utils import get_button_id, ButtonIdInfo
 
 BUTTON_ID = 'cash_out'
+GAME_NAME = 'Last Call'
 CRASH_ODDS = 1 / 7
 
 def cash_out_button(ctx: SlashContext, is_disabled: bool=False):
@@ -96,9 +100,19 @@ async def last_call(ctx: SlashContext, bet: int):
         await edit_game_message(ctx, msg, last_call_game)
         await sleep(1.0)
 
+    bot_user = BotUser(str(ctx.author.id))
     match last_call_game.outcome:
         case Outcome.CRASH:
             await edit_to_lose_message(ctx, msg)
         case Outcome.CASH_OUT:
-            BotUser(str(ctx.author.id)).deposit(last_call_game.winnings)
+            bot_user.deposit(last_call_game.winnings)
             await edit_to_win_message(ctx, msg, last_call_game)
+
+    game_stat = GameStat(
+        name=GAME_NAME,
+        date=datetime.datetime.now(),
+        bet=bet,
+        payout=last_call_game.winnings,
+        is_win=last_call_game.outcome == Outcome.CASH_OUT
+    )
+    bot_user.add_game_stat(game_stat)
