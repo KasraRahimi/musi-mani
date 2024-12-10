@@ -67,7 +67,7 @@ class RpsGameState:
     def player_one_winnings(self) -> int:
         match self.outcome:
             case Outcome.PLAYER_ONE_WIN:
-                return self.bet ** self.__WIN_MULTIPLIER
+                return self.bet * self.__WIN_MULTIPLIER
             case Outcome.TIE:
                 return self.bet
             case Outcome.PLAYER_TWO_WIN:
@@ -83,7 +83,7 @@ class RpsGameState:
             case Outcome.TIE:
                 return self.bet
             case Outcome.PLAYER_TWO_WIN:
-                return self.bet ** self.__WIN_MULTIPLIER
+                return self.bet * self.__WIN_MULTIPLIER
             case _:
                 return 0
 
