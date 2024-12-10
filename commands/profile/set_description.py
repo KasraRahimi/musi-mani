@@ -11,10 +11,8 @@ description_option = SlashCommandOption(
 )
 
 @slash_command(
-    name="profile",
-    description="idk",
-    sub_cmd_name="set-description",
-    sub_cmd_description="Set your profile description",
+    name="set-description",
+    description="Set your profile description",
     options=[description_option]
 )
 async def set_description(ctx: SlashContext, description: str):
