@@ -7,7 +7,7 @@ NAME_OPTION = SlashCommandOption(
     description="The name you'd like the bot to remember you as",
     type=OptionType.STRING,
     min_length=1,
-    max_value=32,
+    max_length=32,
     required=True
 )
 
