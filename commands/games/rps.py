@@ -1,3 +1,4 @@
+import datetime
 from asyncio import exceptions, sleep
 from enum import StrEnum
 from random import randint
@@ -5,9 +6,11 @@ from interactions import slash_command, SlashContext, Message, ActionRow, Button
 from interactions.api.events import Component
 from dataclasses import dataclass
 from database import BotUser
+from models.game_stat import GameStat
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
 
 WIN_MULTIPLIER = 2
+GAME_NAME = "Rock Paper Scissors"
 
 class Choice(StrEnum):
     ROCK = 'rock',
@@ -186,7 +189,16 @@ async def handle_game_end(ctx: SlashContext, msg: Message, rps_game_state: RpsGa
         case Outcome.TIE:
             content.append(f"It's a tie. You've been given back {rps_game_state.player_one_winnings} talan")
 
-    BotUser(str(ctx.author.id)).deposit(rps_game_state.player_one_winnings)
+    bot_user = BotUser(str(ctx.author.id))
+    bot_user.deposit(rps_game_state.player_one_winnings)
+    game_stat = GameStat(
+        name=GAME_NAME,
+        date=datetime.datetime.now(),
+        bet=rps_game_state.bet,
+        payout=rps_game_state.player_one_winnings,
+        is_win=rps_game_state.outcome == Outcome.PLAYER_ONE_WIN
+    )
+    bot_user.add_game_stat(game_stat)
 
     content = '\n'.join(content)
     await ctx.edit(msg, content=content, components=[])
