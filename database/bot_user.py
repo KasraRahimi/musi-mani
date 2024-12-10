@@ -55,6 +55,12 @@ class BotUser:
     def set_description(self, new_description: str) -> None:
         self.__update({"$set": {"description": new_description}})
 
+    @property
+    def game_stats(self) -> list[GameStat]:
+        raw_game_stats = self.__find_user().get("game_stats")
+        game_stats = map(GameStat.from_json, raw_game_stats)
+        return list(game_stats)
+
 
     def __increment_balance(self, amount: int):
         self.__update({"$inc": {"balance": amount}})
