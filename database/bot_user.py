@@ -31,6 +31,27 @@ class BotUser:
     def last_reward(self) -> datetime | None:
         return self.__find_user().get("last_reward")
 
+    @property
+    def name(self) -> str | None:
+        return self.__find_user().get("name")
+
+    def set_name(self, new_name: str) -> None:
+        self.__collection.update_one(
+            {"_id": self.user_id},
+            {"$set": {"name": new_name}}
+        )
+
+    @property
+    def description(self) -> str | None:
+        return self.__find_user().get("description")
+
+    def set_description(self, new_description: str) -> None:
+        self.__collection.update_one(
+            {"_id": self.user_id},
+            {"$set": {"description": new_description}}
+        )
+
+
     def __increment_balance(self, amount: int):
         self.__collection.update_one(
             {"_id": self.user_id},
