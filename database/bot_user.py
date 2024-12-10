@@ -87,4 +87,8 @@ class BotUser:
         self.__update({"$set": {"last_reward": datetime.now()}})
 
     def add_game_stat(self, game_stat: GameStat) -> None:
-        pass
+        self.__update(
+            {
+                "$push": {"game_stats": game_stat.to_json()}
+            }
+        )
