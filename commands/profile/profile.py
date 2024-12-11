@@ -1,10 +1,24 @@
+from dataclasses import dataclass
 from random import randint
 from interactions import slash_command, SlashContext, Embed, Color, EmbedField, EmbedAttachment, SlashCommandOption, \
     OptionType, User, Member
 from requests import get
 from database import BotUser
+from models.game_stat import GameStat
 
 # BASE_URL = "https://api.quotable.io"
+
+@dataclass
+class GameStatsSummary:
+    total_games: int = 0
+    total_wins: int = 0
+    earnings: int = 0
+
+    def add_game_stat(self, game_stat: GameStat) -> None:
+        self.total_games += 1
+        if game_stat.is_win:
+            self.total_wins += 1
+        self.earnings += game_stat.payout - game_stat.bet
 
 USER_OPTION = SlashCommandOption(
     name="user",
@@ -20,6 +34,21 @@ USER_OPTION = SlashCommandOption(
 #             continue
 #         return response.json().pop()["content"]
 #     return "No description"
+
+def separate_game_stats_to_dict(game_stats: list[GameStat]) -> dict[str, GameStat]:
+    game_stat_dict = dict()
+    for game_stat in game_stats:
+        if game_stat.name not in game_stat_dict:
+            game_stat_dict[game_stat.name] = [game_stat]
+        else:
+            game_stat_dict[game_stat.name].append(game_stat)
+
+def summarize_game_stats(game_stats: list[GameStat]) -> GameStatsSummary:
+    summary = GameStatsSummary()
+    for game_stat in game_stats:
+        summary.add_game_stat(game_stat)
+    return summary
+
 
 def get_random_color() -> Color:
     red = randint(0, 255)
