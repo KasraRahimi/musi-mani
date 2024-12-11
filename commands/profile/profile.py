@@ -54,6 +54,8 @@ def get_game_stats_embed_fields(game_stats: list[GameStat], is_include_total: bo
     embed_fields: list[EmbedField] = []
     game_stats_dict = separate_game_stats_to_dict(game_stats)
 
+    # TODO: implement logic to make in include total work.
+
     for name, game_stats in game_stats_dict.items():
         summary = summarize_game_stats(game_stats)
 
