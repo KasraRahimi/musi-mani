@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from random import randint
 from interactions import slash_command, SlashContext, Embed, Color, EmbedField, EmbedAttachment, SlashCommandOption, \
     OptionType, User, Member
@@ -35,19 +35,44 @@ USER_OPTION = SlashCommandOption(
 #         return response.json().pop()["content"]
 #     return "No description"
 
-def separate_game_stats_to_dict(game_stats: list[GameStat]) -> dict[str, GameStat]:
+def separate_game_stats_to_dict(game_stats: list[GameStat]) -> dict[str, list[GameStat]]:
     game_stat_dict = dict()
     for game_stat in game_stats:
         if game_stat.name not in game_stat_dict:
             game_stat_dict[game_stat.name] = [game_stat]
         else:
             game_stat_dict[game_stat.name].append(game_stat)
+    return game_stat_dict
 
 def summarize_game_stats(game_stats: list[GameStat]) -> GameStatsSummary:
     summary = GameStatsSummary()
     for game_stat in game_stats:
         summary.add_game_stat(game_stat)
     return summary
+
+def get_game_stats_embed_fields(game_stats: list[GameStat], is_include_total: bool=False) -> list[EmbedField]:
+    embed_fields: list[EmbedField] = []
+    game_stats_dict = separate_game_stats_to_dict(game_stats)
+
+    for name, game_stats in game_stats_dict.items():
+        summary = summarize_game_stats(game_stats)
+
+        field_value = []
+        for title, stat in asdict(summary).items():
+            title = title.replace("_", " ")
+            field_value.append(f"{title}: **{stat}**")
+        field_value = "\n".join(field_value)
+
+        embed_fields.append(
+            EmbedField(
+                name=name,
+                value=field_value,
+                inline=True
+            )
+        )
+
+    return embed_fields
+
 
 
 def get_random_color() -> Color:
@@ -69,12 +94,18 @@ async def profile(ctx: SlashContext, user: User | Member | None=None):
     description = bot_user.description
     image = EmbedAttachment(url=user.avatar_url)
 
+    game_stats = bot_user.game_stats
+    embed_fields = [
+        EmbedField(name='Balance', value=f"{bot_user.balance} talan", inline=False),
+        *get_game_stats_embed_fields(game_stats),
+    ]
+
     embed = Embed(
         title=f"{name}'s profile",
         description=description,
         thumbnail=image,
         color=get_random_color(),
-        fields=[EmbedField(name='Balance', value=f"{bot_user.balance} talan", inline=False)],
+        fields=embed_fields,
     )
     await ctx.send(embed=embed)
 
