@@ -57,7 +57,9 @@ class BotUser:
 
     @property
     def game_stats(self) -> list[GameStat]:
-        raw_game_stats = self.__find_user().get("game_stats")
+        # this shit's a really bad idea is terms of maintainability
+        # but fuck it, I'll make it better when I have time
+        raw_game_stats = self.__find_user().get("game_stats") or []
         game_stats = map(GameStat.from_json, raw_game_stats)
         return list(game_stats)
 
