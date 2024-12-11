@@ -1,8 +1,9 @@
 from dataclasses import dataclass, asdict
 from random import randint
 from interactions import slash_command, SlashContext, Embed, Color, EmbedField, EmbedAttachment, SlashCommandOption, \
-    OptionType, User, Member
+    OptionType, User, Member, Client, EmbedAuthor, Timestamp
 from requests import get
+from datetime import datetime
 from database import BotUser
 from models.game_stat import GameStat
 
@@ -104,13 +105,14 @@ async def profile(ctx: SlashContext, user: User | Member | None=None):
         EmbedField(name='Balance', value=f"{bot_user.balance} talan", inline=False),
         *get_game_stats_embed_fields(game_stats),
     ]
-
+    current_timestamp = Timestamp.fromdatetime(datetime.now())
     embed = Embed(
         title=f"{name}'s profile",
         description=description,
         thumbnail=image,
         color=get_random_color(),
         fields=embed_fields,
+        timestamp=current_timestamp,
     )
     await ctx.send(embed=embed)
 
