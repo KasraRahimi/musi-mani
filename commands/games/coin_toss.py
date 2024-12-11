@@ -118,6 +118,7 @@ async def handle_end_game(ctx: SlashContext, msg: Message, player_choice: Choice
         payout=payout,
         is_win=is_player_won
     )
+    bot_user.add_game_stat(game_stat)
 
 
     await ctx.edit(msg, content=message)
