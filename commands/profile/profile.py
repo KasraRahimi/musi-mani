@@ -90,6 +90,9 @@ def get_random_color() -> Color:
 )
 async def profile(ctx: SlashContext, user: User | Member | None=None):
     user = user or ctx.author
+    if user.bot:
+        await ctx.send("Now why would a bot have a profile?", ephemeral=True)
+        return
     bot_user = BotUser(str(user.id))
 
     name = bot_user.name or user.username

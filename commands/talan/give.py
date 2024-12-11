@@ -30,6 +30,12 @@ async def give(ctx: InteractionContext, user: Member, amount: int):
     if user.id == ctx.author.id:
         await ctx.send("A little narcissistic today, aren't we? ;)", ephemeral=True)
         return
+    if user.bot:
+        await ctx.send(
+            "I don't think they're gonna be able to spend that money. Why don't you hold onto it.",
+            ephemeral=True,
+        )
+        return
 
     await ctx.defer()
     sender = BotUser(str(ctx.author.id))
