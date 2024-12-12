@@ -2,13 +2,15 @@ from datetime import datetime
 from dataclasses import dataclass
 from enum import StrEnum
 
+from interactions.api.events import Component
 from interactions.client.utils import timestamp_converter
 
 import commands
 from interactions import slash_command, Button, ButtonStyle, SlashContext, SlashCommand, ActionRow, EmbedField, \
-    ComponentContext, InteractionContext, Embed, EmbedAuthor
+    ComponentContext, InteractionContext, Embed, EmbedAuthor, Message, listen
 
-from commands.utils import get_button_id
+from commands.utils import get_button_id, ButtonIdInfo
+
 
 @dataclass
 class CommandInfo:
@@ -31,7 +33,7 @@ DOCS_BUTTON = ActionRow(Button(
     label="Documentation",
 ))
 
-def get_page_changing_action_row(ctx: SlashContext) -> ActionRow:
+def get_page_changing_action_row(ctx: InteractionContext) -> ActionRow:
     return ActionRow(
         Button(
             style=ButtonStyle.SECONDARY,
@@ -121,12 +123,29 @@ def get_embed(ctx: InteractionContext, name: str, description: str, embed_fields
         author=author
     )
 
+async def change_page(ctx: InteractionContext, msg: Message, page: Page):
+    if isinstance(ctx, ComponentContext):
+        await ctx.edit_origin(components=[get_page_changing_action_row(ctx), DOCS_BUTTON], embed=get_embed_by_page(ctx, page))
+    else:
+        await ctx.edit(msg, embed=get_embed_by_page(ctx, page), components=[get_page_changing_action_row(ctx), DOCS_BUTTON])
 @slash_command(
     name="help",
     description="send a help message to help explain how to use the bot",
 )
 async def help(ctx: SlashContext):
-    await ctx.send(components=DOCS_BUTTON, embed=get_embed_by_page(ctx, Page.TALAN_MODULE))
+    msg = await ctx.send(components=[get_page_changing_action_row(ctx), DOCS_BUTTON], embed=get_embed_by_page(ctx, Page.TALAN_MODULE))
+
+    @listen(Component)
+    async def on_component(component: Component):
+        button_info = ButtonIdInfo.from_button_id(component.ctx.custom_id)
+        is_same_ctx = button_info.ctx_id == str(ctx.id)
+        is_same_user = button_info.user_id == str(ctx.author.id)
+        if not is_same_ctx or not is_same_user:
+            await component.ctx.edit_origin()
+            return
+        await change_page(component.ctx, msg, Page(button_info.value))
+
+    ctx.bot.add_listener(on_component)
 
 if __name__ == "__main__":
     name = 'talan'
