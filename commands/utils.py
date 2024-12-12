@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from interactions import SlashContext
+from typing import Self
 
 SEPERATOR = "."
 
@@ -13,10 +14,9 @@ class ButtonIdInfo:
     ctx_id: str
     user_id: str
 
-    def __init__(self, button_id: str):
+    @classmethod
+    def from_button_id(cls, button_id: str) -> Self:
         button_info = button_id.split(SEPERATOR)
         if len(button_info) != 3:
             raise ValueError("button id must have three elements")
-        self.value = button_info[0]
-        self.ctx_id = button_info[1]
-        self.user_id = button_info[2]
+        return cls(button_info[0], button_info[1], button_info[2])
