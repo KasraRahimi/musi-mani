@@ -1,14 +1,11 @@
 from datetime import datetime
 from dataclasses import dataclass
 from enum import StrEnum
-
 from interactions.api.events import Component
 from interactions.client.utils import timestamp_converter
-
 import commands
 from interactions import slash_command, Button, ButtonStyle, SlashContext, SlashCommand, ActionRow, EmbedField, \
     ComponentContext, InteractionContext, Embed, EmbedAuthor, Message, listen
-
 from commands.utils import get_button_id, ButtonIdInfo
 
 
@@ -123,11 +120,13 @@ def get_embed(ctx: InteractionContext, name: str, description: str, embed_fields
         author=author
     )
 
-async def change_page(ctx: InteractionContext, msg: Message, page: Page):
+async def change_page(ctx: InteractionContext, msg: Message, page: Page, original_ctx: SlashContext=None):
+    button_ctx = original_ctx or ctx
     if isinstance(ctx, ComponentContext):
-        await ctx.edit_origin(components=[get_page_changing_action_row(ctx), DOCS_BUTTON], embed=get_embed_by_page(ctx, page))
+        await ctx.edit_origin(components=[get_page_changing_action_row(button_ctx), DOCS_BUTTON], embed=get_embed_by_page(ctx, page))
     else:
         await ctx.edit(msg, embed=get_embed_by_page(ctx, page), components=[get_page_changing_action_row(ctx), DOCS_BUTTON])
+
 @slash_command(
     name="help",
     description="send a help message to help explain how to use the bot",
@@ -143,15 +142,6 @@ async def help(ctx: SlashContext):
         if not is_same_ctx or not is_same_user:
             await component.ctx.edit_origin()
             return
-        await change_page(component.ctx, msg, Page(button_info.value))
+        await change_page(component.ctx, msg, Page(button_info.value), original_ctx=ctx)
 
     ctx.bot.add_listener(on_component)
-
-if __name__ == "__main__":
-    name = 'talan'
-    command_infos = get_command_infos_from_module(name)
-    for info in command_infos:
-        print(info.name)
-        print(info.call_name)
-        print(info.description)
-        print()
