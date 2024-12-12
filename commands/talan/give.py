@@ -23,7 +23,7 @@ AMOUNT = SlashCommandOption(
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
     sub_cmd_name="give",
-    sub_cmd_description="give talan to a user",
+    sub_cmd_description="Give some money to another user.",
     options=[USER, AMOUNT],
 )
 async def give(ctx: InteractionContext, user: Member, amount: int):

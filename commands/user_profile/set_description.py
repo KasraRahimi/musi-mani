@@ -12,7 +12,7 @@ description_option = SlashCommandOption(
 
 @slash_command(
     name="set-description",
-    description="Set your profile description",
+    description="Set your profile description.",
     options=[description_option]
 )
 async def set_description(ctx: SlashContext, description: str):

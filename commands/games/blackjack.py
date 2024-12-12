@@ -130,7 +130,7 @@ async def get_component_ctx(ctx: SlashContext, msg: Message, action_row) -> None
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
     sub_cmd_name="blackjack",
-    sub_cmd_description="Play a game of blackhack",
+    sub_cmd_description="Place a bet on a regular game of blackjack.",
     options=[BET_OPTION]
 )
 async def blackjack(ctx: SlashContext, bet: int):

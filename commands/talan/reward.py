@@ -12,7 +12,7 @@ TIME_BETWEEN_CLAIMS = datetime.timedelta(days=1)
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
     sub_cmd_name="daily",
-    sub_cmd_description="claim your daily talan reward"
+    sub_cmd_description="Claim your daily talan reward."
 )
 async def reward(ctx: InteractionContext):
     bot_user = BotUser(str(ctx.author.id))

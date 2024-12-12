@@ -209,7 +209,7 @@ async def handle_game_end(ctx: SlashContext, msg: Message, rps_game_state: RpsGa
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
     sub_cmd_name="rps",
-    sub_cmd_description="place a bet on a game of rock paper scissors",
+    sub_cmd_description="Place a bet on a game of rock paper scissors. Try to beat the bot.",
     options=[BET_OPTION]
 )
 async def rps(ctx: SlashContext, bet: int):

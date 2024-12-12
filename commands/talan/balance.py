@@ -7,7 +7,7 @@ from .constants import COMMAND_NAME, COMMAND_DESCRIPTION
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
     sub_cmd_name="balance",
-    sub_cmd_description="verify your talan balance"
+    sub_cmd_description="Check your talan balance."
 )
 async def balance(ctx: InteractionContext):
     await ctx.defer()

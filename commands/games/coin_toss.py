@@ -129,7 +129,7 @@ async def handle_end_game(ctx: SlashContext, msg: Message, player_choice: Choice
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
     sub_cmd_name="coin-toss",
-    sub_cmd_description="Play a game of coin toss, try to guess the outcome",
+    sub_cmd_description="Place a bet and guess the outcome of a coin flip.",
     options=[BET_OPTION]
 )
 async def coin_toss(ctx: SlashContext, bet: int):

@@ -145,10 +145,10 @@ async def disable_buttons(ctx: SlashContext, msg: Message) -> None:
 
 @slash_command(
     name="help",
-    description="send a help message to help explain how to use the bot",
+    description="Prompt the bot to give you its commands with a helpful description.",
 )
 async def help(ctx: SlashContext):
-    msg = await ctx.send(components=[get_page_changing_action_row(ctx), DOCS_BUTTON], embed=get_embed_by_page(ctx, Page.TALAN_MODULE))
+    msg = await ctx.send(components=[get_page_changing_action_row(ctx), DOCS_BUTTON], embed=get_embed_by_page(ctx, Page.MISC_MODULE))
 
     @listen(Component)
     async def on_component(component: Component):

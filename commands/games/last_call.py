@@ -68,7 +68,7 @@ async def edit_to_lose_message(ctx: SlashContext, msg: Message) -> None:
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
     sub_cmd_name='last-call',
-    sub_cmd_description='place a bet on a game where you have to cash out before you crash',
+    sub_cmd_description='Place a bet on a game of last call. Cash out before the game crashes.',
     options=[BET_OPTION]
 )
 async def last_call(ctx: SlashContext, bet: int):

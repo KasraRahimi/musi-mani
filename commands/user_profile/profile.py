@@ -86,7 +86,7 @@ def get_random_color() -> Color:
 
 @slash_command(
     name="profile",
-    description="See your user profile with the bot",
+    description="See your user profile.",
     options=[USER_OPTION]
 )
 async def profile(ctx: SlashContext, user: User | Member | None=None):

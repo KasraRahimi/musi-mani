@@ -16,7 +16,7 @@ content_option = SlashCommandOption(
 
 @slash_command(
     name="anonymous",
-    description="anonymously send a message to a friend",
+    description="Send a (not so) anonymous message to another user.",
     options=[user_option, content_option]
 )
 async def anonymous(ctx: SlashContext, user: Member, content: str):

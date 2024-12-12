@@ -23,7 +23,7 @@ action_row = [
     )
 ]
 
-@slash_command(name="name", description="Replies with your name")
+@slash_command(name="name", description="Ask the bot what your name is.")
 async def name(ctx: SlashContext):
     username = ctx.author.username
     nickname = ctx.author.nickname
