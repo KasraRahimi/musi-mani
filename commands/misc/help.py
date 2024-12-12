@@ -59,7 +59,7 @@ def get_embed_by_page(ctx: InteractionContext, page: Page):
             EmbedField(
                 name=command_info.call_name,
                 value=command_info.description,
-                inline=True
+                inline=False
             )
         )
 
@@ -105,12 +105,7 @@ class CommandInfo:
     description="send a help message to help explain how to use the bot",
 )
 async def help(ctx: SlashContext):
-    content = (
-        "Hi, :wave:",
-        "I'm ilo musi, I'm a discord gambling bot. I offer a variety of casino games you can bet talan on. I will have a more useful help message soon. For now, refer to my documentation with the link below."
-    )
-    content = "\n".join(content)
-    await ctx.send(content, components=DOCS_BUTTON)
+    await ctx.send(components=DOCS_BUTTON, embed=get_embed_by_page(ctx, Page.TALAN_MODULE))
 
 def get_command_info(cmd: SlashCommand) -> CommandInfo:
     if cmd.is_subcommand:
@@ -119,7 +114,7 @@ def get_command_info(cmd: SlashCommand) -> CommandInfo:
     else:
         name = cmd.name
         description = cmd.description
-    return CommandInfo(name, description)
+    return CommandInfo(name, str(description))
 
 def get_command_infos_from_module(module_name: str) -> list[CommandInfo]:
     module = getattr(commands, module_name)
