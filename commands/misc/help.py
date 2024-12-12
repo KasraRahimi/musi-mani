@@ -76,6 +76,9 @@ def get_embed_by_page(ctx: InteractionContext, page: Page):
         case Page.MISC_MODULE:
             name = "Miscellaneous"
             description = "The list of miscellaneous commands"
+        case _:
+            name = "Error"
+            description = "Something went wrong"
 
     return get_embed(ctx, name, description, embed_fields)
 
