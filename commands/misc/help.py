@@ -8,8 +8,16 @@ import commands
 from interactions import slash_command, Button, ButtonStyle, SlashContext, SlashCommand, ActionRow, EmbedField, \
     ComponentContext, InteractionContext, Embed, EmbedAuthor
 
-from commands.user_profile.set_description import description_option
 from commands.utils import get_button_id
+
+@dataclass
+class CommandInfo:
+    name: str
+    description: str
+
+    @property
+    def call_name(self) -> str:
+        return f"/{self.name}"
 
 class Page(StrEnum):
     MISC_MODULE = 'misc'
@@ -50,6 +58,26 @@ def get_page_changing_action_row(ctx: SlashContext) -> ActionRow:
             emoji="🎲"
         )
     )
+
+def get_command_info(cmd: SlashCommand) -> CommandInfo:
+    if cmd.is_subcommand:
+        name = f"{cmd.name} {cmd.sub_cmd_name}"
+        description = cmd.sub_cmd_description
+    else:
+        name = cmd.name
+        description = cmd.description
+    return CommandInfo(name, str(description))
+
+
+def get_command_infos_from_module(module_name: str) -> list[CommandInfo]:
+    module = getattr(commands, module_name)
+    command_names = module.__all__
+    command_infos = []
+    for name in command_names:
+        command = getattr(module, name)
+        command_infos.append(get_command_info(command))
+    return command_infos
+
 
 def get_embed_by_page(ctx: InteractionContext, page: Page):
     command_infos = get_command_infos_from_module(page)
@@ -93,40 +121,12 @@ def get_embed(ctx: InteractionContext, name: str, description: str, embed_fields
         author=author
     )
 
-
-@dataclass
-class CommandInfo:
-    name: str
-    description: str
-
-    @property
-    def call_name(self) -> str:
-        return f"/{self.name}"
-
 @slash_command(
     name="help",
     description="send a help message to help explain how to use the bot",
 )
 async def help(ctx: SlashContext):
     await ctx.send(components=DOCS_BUTTON, embed=get_embed_by_page(ctx, Page.TALAN_MODULE))
-
-def get_command_info(cmd: SlashCommand) -> CommandInfo:
-    if cmd.is_subcommand:
-        name = f"{cmd.name} {cmd.sub_cmd_name}"
-        description = cmd.sub_cmd_description
-    else:
-        name = cmd.name
-        description = cmd.description
-    return CommandInfo(name, str(description))
-
-def get_command_infos_from_module(module_name: str) -> list[CommandInfo]:
-    module = getattr(commands, module_name)
-    command_names = module.__all__
-    command_infos = []
-    for name in command_names:
-        command = getattr(module, name)
-        command_infos.append(get_command_info(command))
-    return command_infos
 
 if __name__ == "__main__":
     name = 'talan'
