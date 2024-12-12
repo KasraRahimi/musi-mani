@@ -1,3 +1,4 @@
+from asyncio import sleep, create_task
 from datetime import datetime
 from dataclasses import dataclass
 from enum import StrEnum
@@ -8,6 +9,10 @@ from interactions import slash_command, Button, ButtonStyle, SlashContext, Slash
     ComponentContext, InteractionContext, Embed, EmbedAuthor, Message, listen
 from commands.utils import get_button_id, ButtonIdInfo
 
+IGNORED_COMMANDS = [
+    'add_funds',
+    'weka_ale',
+]
 
 @dataclass
 class CommandInfo:
@@ -30,31 +35,35 @@ DOCS_BUTTON = ActionRow(Button(
     label="Documentation",
 ))
 
-def get_page_changing_action_row(ctx: InteractionContext) -> ActionRow:
+def get_page_changing_action_row(ctx: InteractionContext, is_disabled: bool=False) -> ActionRow:
     return ActionRow(
         Button(
             style=ButtonStyle.SECONDARY,
             label="Misc",
             custom_id=get_button_id(Page.MISC_MODULE, ctx),
-            emoji="🔮"
+            emoji="🔮",
+            disabled=is_disabled
         ),
         Button(
             style=ButtonStyle.SECONDARY,
             label="Talan",
             custom_id=get_button_id(Page.TALAN_MODULE, ctx),
             emoji="🪙",
+            disabled=is_disabled
         ),
         Button(
             style=ButtonStyle.SECONDARY,
             label="Profile",
             custom_id=get_button_id(Page.PROFILE_MODULE, ctx),
-            emoji="ℹ️"
+            emoji="ℹ️",
+            disabled=is_disabled
         ),
         Button(
             style=ButtonStyle.SECONDARY,
             label="Games",
             custom_id=get_button_id(Page.GAMES_MODULE, ctx),
-            emoji="🎲"
+            emoji="🎲",
+            disabled=is_disabled
         )
     )
 
@@ -73,6 +82,8 @@ def get_command_infos_from_module(module_name: str) -> list[CommandInfo]:
     command_names = module.__all__
     command_infos = []
     for name in command_names:
+        if name in IGNORED_COMMANDS:
+            continue
         command = getattr(module, name)
         command_infos.append(get_command_info(command))
     return command_infos
@@ -127,6 +138,10 @@ async def change_page(ctx: InteractionContext, msg: Message, page: Page, origina
     else:
         await ctx.edit(msg, embed=get_embed_by_page(ctx, page), components=[get_page_changing_action_row(ctx), DOCS_BUTTON])
 
+async def disable_buttons(ctx: SlashContext, msg: Message) -> None:
+    await sleep(60)
+    await ctx.edit(msg, components=[get_page_changing_action_row(ctx, True), DOCS_BUTTON])
+
 @slash_command(
     name="help",
     description="send a help message to help explain how to use the bot",
@@ -145,3 +160,4 @@ async def help(ctx: SlashContext):
         await change_page(component.ctx, msg, Page(button_info.value), original_ctx=ctx)
 
     ctx.bot.add_listener(on_component)
+    create_task(disable_buttons(ctx, msg))
