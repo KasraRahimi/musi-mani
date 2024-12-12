@@ -1,12 +1,47 @@
 from dataclasses import dataclass
 import commands
-from interactions import slash_command, Button, ButtonStyle, SlashContext, SlashCommand
+from interactions import slash_command, Button, ButtonStyle, SlashContext, SlashCommand, ActionRow
 
-DOCS_BUTTON = Button(
+from commands.utils import get_button_id
+
+DOCS_BUTTON = ActionRow(Button(
     style=ButtonStyle.LINK,
     url="https://kawa-4.gitbook.io/musi-mani",
     label="Documentation",
-)
+))
+
+MISC_MODULE = 'misc'
+TALAN_MODULE = 'talan'
+PROFILE_MODULE = 'user_profile'
+GAMES_MODULE = 'games'
+
+def get_page_changing_action_row(ctx: SlashContext) -> ActionRow:
+    return ActionRow(
+        Button(
+            style=ButtonStyle.SECONDARY,
+            label="Misc",
+            custom_id=get_button_id(MISC_MODULE, ctx),
+            emoji="🔮"
+        ),
+        Button(
+            style=ButtonStyle.SECONDARY,
+            label="Talan",
+            custom_id=get_button_id(TALAN_MODULE, ctx),
+            emoji="🪙",
+        ),
+        Button(
+            style=ButtonStyle.SECONDARY,
+            label="Profile",
+            custom_id=get_button_id(PROFILE_MODULE, ctx),
+            emoji="ℹ️"
+        ),
+        Button(
+            style=ButtonStyle.SECONDARY,
+            label="Games",
+            custom_id=get_button_id(GAMES_MODULE, ctx),
+            emoji="🎲"
+        )
+    )
 
 @dataclass
 class CommandInfo:
