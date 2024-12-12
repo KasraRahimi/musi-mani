@@ -33,6 +33,7 @@ DOCS_BUTTON = ActionRow(Button(
     style=ButtonStyle.LINK,
     url="https://kawa-4.gitbook.io/musi-mani",
     label="Documentation",
+    emoji='📖',
 ))
 
 def get_page_changing_action_row(ctx: InteractionContext, is_disabled: bool=False) -> ActionRow:
