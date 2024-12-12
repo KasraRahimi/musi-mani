@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from interactions import SlashContext
+from interactions import SlashContext, InteractionContext
 from typing import Self
 
 SEPERATOR = "."
 
-def get_button_id(value: str, ctx: SlashContext):
+def get_button_id(value: str, ctx: InteractionContext) -> str:
     button_id = map(str, (value, ctx.id, ctx.author.id))
     return SEPERATOR.join(button_id)
 
