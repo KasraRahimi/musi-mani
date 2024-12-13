@@ -1,8 +1,16 @@
 import commands
 import events
-from constants import TOKEN
+import logging
+from pathlib import Path
+from logging import handlers
+from constants import TOKEN, ROOT_DIRECTORY, MAIN_LOGGER
 from interactions import Client, Intents, SlashCommand, Listener
 
+def setup_logging() -> None:
+    Path(f"{ROOT_DIRECTORY}/logs").mkdir(parents=True, exist_ok=True)
+    logger = logging.getLogger(MAIN_LOGGER)
+    time_handler = handlers.TimedRotatingFileHandler(f"{ROOT_DIRECTORY}/logs/bot_logs.log", when="M")
+    logger.addHandler(time_handler)
 
 def register_commands(bot: Client):
     print("== Registering commands ==")
@@ -22,6 +30,7 @@ def register_events(bot: Client):
 
 if __name__ == "__main__":
     bot = Client(token=TOKEN, intents=Intents.DEFAULT)
+    setup_logging()
 
     register_commands(bot)
     register_events(bot)
