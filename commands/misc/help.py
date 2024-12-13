@@ -6,7 +6,7 @@ from interactions.api.events import Component
 from interactions.client.utils import timestamp_converter
 import commands
 from interactions import slash_command, Button, ButtonStyle, SlashContext, SlashCommand, ActionRow, EmbedField, \
-    ComponentContext, InteractionContext, Embed, EmbedAuthor, Message, listen
+    ComponentContext, InteractionContext, Embed, EmbedAuthor, Message, listen, component_callback
 from commands.utils import get_button_id, ButtonIdInfo
 
 IGNORED_COMMANDS = [
@@ -36,8 +36,8 @@ DOCS_BUTTON = ActionRow(Button(
     emoji='📖',
 ))
 
-def get_page_changing_action_row(ctx: InteractionContext, is_disabled: bool=False) -> ActionRow:
-    return ActionRow(
+def get_page_changing_buttons(ctx: InteractionContext, is_disabled: bool=False) -> list[Button]:
+    return [
         Button(
             style=ButtonStyle.SECONDARY,
             label="Misc",
@@ -66,6 +66,11 @@ def get_page_changing_action_row(ctx: InteractionContext, is_disabled: bool=Fals
             emoji="🎲",
             disabled=is_disabled
         )
+    ]
+
+def get_page_changing_action_row(ctx: InteractionContext, is_disabled: bool=False) -> ActionRow:
+    return ActionRow(
+        *get_page_changing_buttons(ctx, is_disabled=is_disabled)
     )
 
 def get_command_info(cmd: SlashCommand) -> CommandInfo:
@@ -150,15 +155,25 @@ async def disable_buttons(ctx: SlashContext, msg: Message) -> None:
 async def help(ctx: SlashContext):
     msg = await ctx.send(components=[get_page_changing_action_row(ctx), DOCS_BUTTON], embed=get_embed_by_page(ctx, Page.MISC_MODULE))
 
-    @listen(Component)
-    async def on_component(component: Component):
-        button_info = ButtonIdInfo.from_button_id(component.ctx.custom_id)
-        is_same_ctx = button_info.ctx_id == str(ctx.id)
-        is_same_user = button_info.user_id == str(ctx.author.id)
-        if not is_same_ctx or not is_same_user:
-            await component.ctx.edit_origin()
-            return
-        await change_page(component.ctx, msg, Page(button_info.value), original_ctx=ctx)
+    # @listen(Component)
+    # async def on_component(component: Component):
+    #     button_info = ButtonIdInfo.from_button_id(component.ctx.custom_id)
+    #     is_same_ctx = button_info.ctx_id == str(ctx.id)
+    #     is_same_user = button_info.user_id == str(ctx.author.id)
+    #     if not is_same_ctx or not is_same_user:
+    #         await component.ctx.edit_origin()
+    #         return
+    #     await change_page(component.ctx, msg, Page(button_info.value), original_ctx=ctx)
 
-    ctx.bot.add_listener(on_component)
+    for button in get_page_changing_buttons(ctx):
+        @component_callback(button.custom_id)
+        async def on_component(cmp_ctx: ComponentContext):
+            button_info = ButtonIdInfo.from_button_id(cmp_ctx.custom_id)
+            is_same_user = cmp_ctx.author.id == ctx.author.id
+            if not is_same_user:
+                await cmp_ctx.edit_origin()
+                return
+            await change_page(cmp_ctx, msg, Page(button_info.value), original_ctx=ctx)
+        ctx.bot.add_component_callback(on_component)
+
     create_task(disable_buttons(ctx, msg))
