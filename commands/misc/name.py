@@ -35,6 +35,7 @@ async def name(ctx: SlashContext):
 
     await ctx.send(f"Your name is {username}, though here, we call you {nickname}")
 
+    # TODO: add a same user check or something cuz this behaviour is fkn whack
     message = await ctx.send("Did I get that right?", ephemeral=True, components=action_row)
 
     try:
