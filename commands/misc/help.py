@@ -144,27 +144,7 @@ async def change_page(ctx: InteractionContext, msg: Message, page: Page, origina
     else:
         await ctx.edit(msg, embed=get_embed_by_page(ctx, page), components=[get_page_changing_action_row(ctx), DOCS_BUTTON])
 
-async def disable_buttons(ctx: SlashContext, msg: Message) -> None:
-    await sleep(60)
-    await ctx.edit(msg, components=[get_page_changing_action_row(ctx, True), DOCS_BUTTON])
-
-@slash_command(
-    name="help",
-    description="Prompt the bot to give you its commands with a helpful description.",
-)
-async def help(ctx: SlashContext):
-    msg = await ctx.send(components=[get_page_changing_action_row(ctx), DOCS_BUTTON], embed=get_embed_by_page(ctx, Page.MISC_MODULE))
-
-    # @listen(Component)
-    # async def on_component(component: Component):
-    #     button_info = ButtonIdInfo.from_button_id(component.ctx.custom_id)
-    #     is_same_ctx = button_info.ctx_id == str(ctx.id)
-    #     is_same_user = button_info.user_id == str(ctx.author.id)
-    #     if not is_same_ctx or not is_same_user:
-    #         await component.ctx.edit_origin()
-    #         return
-    #     await change_page(component.ctx, msg, Page(button_info.value), original_ctx=ctx)
-
+def listen_to_button_events(ctx: SlashContext, msg: Message) -> None:
     for button in get_page_changing_buttons(ctx):
         @component_callback(button.custom_id)
         async def on_component(cmp_ctx: ComponentContext):
@@ -176,4 +156,15 @@ async def help(ctx: SlashContext):
             await change_page(cmp_ctx, msg, Page(button_info.value), original_ctx=ctx)
         ctx.bot.add_component_callback(on_component)
 
+async def disable_buttons(ctx: SlashContext, msg: Message) -> None:
+    await sleep(60)
+    await ctx.edit(msg, components=[get_page_changing_action_row(ctx, True), DOCS_BUTTON])
+
+@slash_command(
+    name="help",
+    description="Prompt the bot to give you its commands with a helpful description.",
+)
+async def help(ctx: SlashContext):
+    msg = await ctx.send(components=[get_page_changing_action_row(ctx), DOCS_BUTTON], embed=get_embed_by_page(ctx, Page.MISC_MODULE))
+    listen_to_button_events(ctx, msg)
     create_task(disable_buttons(ctx, msg))
