@@ -36,7 +36,7 @@ DOCS_BUTTON = ActionRow(Button(
 ))
 
 def get_page_changing_buttons(ctx: InteractionContext, is_disabled: bool=False) -> list[Button]:
-    return [
+    buttons = [
         Button(
             style=ButtonStyle.SECONDARY,
             label="Misc",
@@ -66,6 +66,14 @@ def get_page_changing_buttons(ctx: InteractionContext, is_disabled: bool=False) 
             disabled=is_disabled
         )
     ]
+    current_page = getattr(ctx, 'current_page', None)
+    if current_page is None:
+        return buttons
+    for button in buttons:
+        if button.custom_id == get_button_id(current_page, ctx):
+            button.style = ButtonStyle.PRIMARY
+            break
+    return buttons
 
 def get_page_changing_action_row(ctx: InteractionContext, is_disabled: bool=False) -> ActionRow:
     return ActionRow(
@@ -152,7 +160,9 @@ def listen_to_button_events(ctx: SlashContext, msg: Message) -> None:
             if not is_same_user:
                 await cmp_ctx.edit_origin()
                 return
-            await change_page(cmp_ctx, msg, Page(button_info.value), original_ctx=ctx)
+            current_page = Page(button_info.value)
+            ctx.current_page = current_page
+            await change_page(cmp_ctx, msg, current_page, original_ctx=ctx)
         ctx.bot.add_component_callback(on_component)
 
 async def disable_buttons(ctx: SlashContext, msg: Message) -> None:
@@ -164,6 +174,7 @@ async def disable_buttons(ctx: SlashContext, msg: Message) -> None:
     description="Prompt the bot to give you its commands with a helpful description.",
 )
 async def help(ctx: SlashContext):
+    ctx.current_page = Page.MISC_MODULE
     msg = await ctx.send(components=[get_page_changing_action_row(ctx), DOCS_BUTTON], embed=get_embed_by_page(ctx, Page.MISC_MODULE))
     listen_to_button_events(ctx, msg)
     create_task(disable_buttons(ctx, msg))
