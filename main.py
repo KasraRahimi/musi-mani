@@ -6,10 +6,20 @@ from logging import handlers
 from constants import TOKEN, ROOT_DIRECTORY, MAIN_LOGGER
 from interactions import Client, Intents, SlashCommand, Listener
 
+LOGGER_MESSAGE_FORMAT = "{asctime}: [{levelname}] {message}"
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+LOGGING_LEVEL = logging.INFO
+
 def setup_logging() -> None:
+    # Ensure that the "/logs" directory exits
     Path(f"{ROOT_DIRECTORY}/logs").mkdir(parents=True, exist_ok=True)
+
     logger = logging.getLogger(MAIN_LOGGER)
+    logger.setLevel(LOGGING_LEVEL)
     time_handler = handlers.TimedRotatingFileHandler(f"{ROOT_DIRECTORY}/logs/bot_logs.log", when="M")
+    formatter = logging.Formatter(LOGGER_MESSAGE_FORMAT, DATE_FORMAT, style="{")
+
+    time_handler.setFormatter(formatter)
     logger.addHandler(time_handler)
 
 def register_commands(bot: Client):

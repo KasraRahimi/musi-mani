@@ -7,3 +7,6 @@ env/
 
 # ignore pycaches
 __pycache__/
+
+# ignore logging messages
+logs/
