@@ -16,7 +16,7 @@ def setup_logging() -> None:
 
     logger = logging.getLogger(MAIN_LOGGER)
     logger.setLevel(LOGGING_LEVEL)
-    time_handler = handlers.TimedRotatingFileHandler(f"{ROOT_DIRECTORY}/logs/bot_logs.log", when="M")
+    time_handler = handlers.TimedRotatingFileHandler(f"{ROOT_DIRECTORY}/logs/bot_logs.log", when="midnight")
     formatter = logging.Formatter(LOGGER_MESSAGE_FORMAT, DATE_FORMAT, style="{")
 
     time_handler.setFormatter(formatter)
