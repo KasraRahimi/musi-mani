@@ -2,7 +2,6 @@ from asyncio import sleep, create_task
 from datetime import datetime
 from dataclasses import dataclass
 from enum import StrEnum
-from interactions.api.events import Component
 from interactions.client.utils import timestamp_converter
 import commands
 from interactions import slash_command, Button, ButtonStyle, SlashContext, SlashCommand, ActionRow, EmbedField, \
