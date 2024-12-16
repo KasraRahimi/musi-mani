@@ -32,7 +32,7 @@ def calculate_probability_of_win_with_steps(
     )
     probability_product = 1
     for i, probability in enumerate(step_probabilities):
-        probability_product += probability ** num_of_steps[i]
+        probability_product *= probability ** num_of_steps[i]
 
     tmp_step_list = list(num_of_steps)
     combinations = 1
