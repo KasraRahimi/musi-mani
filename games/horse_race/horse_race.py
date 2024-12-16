@@ -1,5 +1,6 @@
 from horse import Horse
 from random import random
+from math import comb
 
 def generate_horse_step_probabilities(horses: list[Horse], num_of_trials: int=2) -> None:
     for horse in horses:
@@ -16,6 +17,30 @@ def normalize_horse_step_probabilities(horses: list[Horse]) -> None:
 
     for horse in horses:
         horse.step_probability /= sum_horse_probabilities
+
+
+def calculate_probability_of_win_with_steps(
+        index_of_winner: int,
+        num_of_loser_steps: tuple[int],
+        step_probabilities: tuple[float],
+        steps_to_victory: int=7
+) -> float:
+    num_of_steps = (
+        *num_of_loser_steps[:index_of_winner],
+        steps_to_victory - 1,
+        *num_of_loser_steps[index_of_winner:]
+    )
+    probability_product = 1
+    for i, probability in enumerate(step_probabilities):
+        probability_product += probability ** num_of_steps[i]
+
+    tmp_step_list = list(num_of_steps)
+    combinations = 1
+    while len(tmp_step_list) > 0:
+        tmp_step = tmp_step_list.pop()
+        combinations *= comb(sum(tmp_step_list + [tmp_step]), tmp_step)
+
+    return probability_product * step_probabilities[index_of_winner] * combinations
 
 
 class HorseRace:
