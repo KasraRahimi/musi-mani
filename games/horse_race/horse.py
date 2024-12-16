@@ -22,6 +22,8 @@ class Horse:
                 characters.append(self.emoji)
             else:
                 characters.append(race_track_character)
+            # elif i != 0:
+            #     characters.append(race_track_character)
 
         position_string = " ".join(characters)
         return position_string[::-1]
