@@ -1,8 +1,10 @@
 from enum import StrEnum
-
-from interactions import slash_command, SlashContext, ActionRow, Button, ButtonStyle
-
+from interactions import slash_command, SlashContext, ActionRow, Button, ButtonStyle, Message, Embed, EmbedAuthor, \
+    EmbedField
+from games.horse_race import HorseRace
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet, INSUFFICIENT_FUNDS_MSG
+
+GAME_NAME = "Horse Race"
 
 class HorseChoice(StrEnum):
     ONE = '0'
@@ -33,6 +35,38 @@ ACTION_ROW = [ActionRow(
     )
 )]
 
+def get_horse_info_embed(ctx: SlashContext, horse_race_game: HorseRace) -> Embed:
+    author = EmbedAuthor(
+        name=ctx.author.display_name,
+        icon_url=ctx.author.avatar_url
+    )
+    embed_fields = []
+    for i, horse_info in enumerate(horse_race_game.horse_infos):
+        embed_field = EmbedField(
+            name=f"Horse {i+1}",
+            value=f"Odds of winning: **{horse_info.win_odds * 100:.2f}%**\n"\
+                f"Payout multiplier: **{horse_info.win_multiplier:.2f}x**",
+            inline=False
+        )
+        embed_fields.append(embed_field)
+    description = "Pick which horse you think will win."\
+            "The less likely that the horse you pick wins, the larger the payout if they do win."
+    return Embed(
+        author=author,
+        title=f"{GAME_NAME}",
+        description=description,
+        fields=embed_fields,
+    )
+
+
+async def get_initial_message(ctx: SlashContext, horse_race_game: HorseRace) -> Message:
+    return await ctx.send(
+        f"<@{ctx.author.id}>",
+        embed=get_horse_info_embed(ctx, horse_race_game),
+        components=ACTION_ROW
+    )
+
+
 @slash_command(
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
@@ -44,4 +78,5 @@ async def horse_race(ctx: SlashContext, bet: int):
     if not can_player_bet(ctx, bet, do_withdraw=False):
         await ctx.send(INSUFFICIENT_FUNDS_MSG, ephemeral=True)
         return
-    await ctx.send("If the command were working, you'd have enough to place a bet")
+    horse_race_game = HorseRace(bet=bet)
+    await get_initial_message(ctx, horse_race_game)
