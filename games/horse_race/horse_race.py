@@ -1,4 +1,6 @@
 from functools import cached_property
+
+from .horse_pool import HORSE_POOL
 from .horse import Horse
 from random import random, choices
 from math import comb
@@ -35,6 +37,12 @@ def normalize_horse_step_probabilities(horses: list[Horse]) -> None:
 
     for horse in horses:
         horse.step_probability /= sum_horse_probabilities
+
+
+def get_random_horses(count: int=4) -> list[Horse]:
+    weights = [horse.selection_weight for horse in HORSE_POOL]
+    horses = choices(HORSE_POOL, weights=weights, k=count)
+    return horses
 
 
 def calculate_probability_of_win_with_steps(
