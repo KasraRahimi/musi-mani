@@ -1,6 +1,8 @@
 from enum import StrEnum
 from interactions import slash_command, SlashContext, ActionRow, Button, ButtonStyle, Message, Embed, EmbedAuthor, \
-    EmbedField
+    EmbedField, Client, ClientT
+from interactions.api.events import Component
+from asyncio import exceptions
 from games.horse_race import HorseRace
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet, INSUFFICIENT_FUNDS_MSG
 
@@ -66,6 +68,23 @@ async def get_initial_message(ctx: SlashContext, horse_race_game: HorseRace) -> 
         components=ACTION_ROW
     )
 
+async def wait_for_player_choice(ctx: SlashContext, msg: Message) -> HorseChoice | None:
+    bot: Client = ctx.bot
+    async def same_user_check(component: Component) -> bool:
+        if component.ctx.author.id == ctx.author.id:
+            return True
+        else:
+            await component.ctx.edit_origin()
+            return False
+
+    try:
+        used_component: Component = await bot.wait_for_component(messages=msg, components=ACTION_ROW, check=same_user_check, timeout=120)
+    except exceptions.TimeoutError:
+        await ctx.edit(message=msg, components=[])
+        return None
+    else:
+        await used_component.ctx.edit_origin(components=[])
+        return HorseChoice(used_component.ctx.custom_id)
 
 @slash_command(
     name=COMMAND_NAME,
@@ -79,4 +98,5 @@ async def horse_race(ctx: SlashContext, bet: int):
         await ctx.send(INSUFFICIENT_FUNDS_MSG, ephemeral=True)
         return
     horse_race_game = HorseRace(bet=bet)
-    await get_initial_message(ctx, horse_race_game)
+    msg = await get_initial_message(ctx, horse_race_game)
+    player_horse_choice = await wait_for_player_choice(ctx, msg)
