@@ -4,6 +4,17 @@ from random import random, choices
 from math import comb
 from itertools import product
 from time import sleep
+from dataclasses import dataclass
+
+@dataclass
+class HorseInfo:
+    index: int
+    win_odds: float
+
+    @property
+    def win_multiplier(self) -> float:
+        return 1 / self.win_odds
+
 
 def generate_horse_step_probabilities(horses: list[Horse], num_of_trials: int=2) -> None:
     for horse in horses:
@@ -77,6 +88,18 @@ class HorseRace:
                 )
         return tuple(win_probabilities)
 
+    @property
+    def horse_infos(self) -> tuple[HorseInfo, ...]:
+        horse_infos = []
+        for i, horse in enumerate(self.horses):
+            horse_infos.append(
+                HorseInfo(
+                    index=i,
+                    win_odds=self.win_probabilities[i],
+                )
+            )
+        return tuple(horse_infos)
+
     def pick_winning_horse(self, index: int) -> None:
         if index < 0 or index >= len(self.horses):
             raise IndexError("Index out of range")
@@ -89,6 +112,13 @@ class HorseRace:
                 return i
 
         return None
+
+    @property
+    def winning_horse_info(self) -> HorseInfo | None:
+        if self.race_winner_index is None:
+            return None
+        else:
+            return self.horse_infos[self.race_winner_index]
 
     def step(self) -> None:
         indices = tuple(range(len(self.horses)))
@@ -105,8 +135,12 @@ class HorseRace:
 
     @property
     def potential_payouts(self) -> tuple[int, ...]:
-        payouts = [int(self.bet / odds) for odds in self.win_probabilities]
+        payouts = [int(self.bet * horse_info.win_multiplier) for horse_info in self.horse_infos]
         return tuple(payouts)
+
+    @property
+    def is_game_over(self) -> bool:
+        return self.race_winner_index is not None
 
     @property
     def winnings(self) -> int:
@@ -115,8 +149,7 @@ class HorseRace:
         if self.race_winner_index is None:
             return 0
         if self.race_winner_index == self.chosen_horse_index:
-            odds = self.win_probabilities[self.chosen_horse_index]
-            return int(self.bet / odds)
+            return int(self.bet * self.winning_horse_info.win_multiplier)
         else:
             return 0
 
@@ -124,7 +157,7 @@ if __name__ == '__main__':
     horse_race = HorseRace(bet=100, num_of_steps_to_victory=7)
     print(horse_race.horses_position_string)
     while horse_race.race_winner_index is None:
-        print("="*10)
+        print("~ "*10)
         horse_race.step()
         print(horse_race.horses_position_string)
         sleep(1)
