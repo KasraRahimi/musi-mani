@@ -2,7 +2,7 @@ from enum import StrEnum
 from interactions import slash_command, SlashContext, ActionRow, Button, ButtonStyle, Message, Embed, EmbedAuthor, \
     EmbedField, Client, ClientT
 from interactions.api.events import Component
-from asyncio import exceptions
+from asyncio import exceptions, sleep
 from games.horse_race import HorseRace
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet, INSUFFICIENT_FUNDS_MSG
 
@@ -86,6 +86,29 @@ async def wait_for_player_choice(ctx: SlashContext, msg: Message) -> HorseChoice
         await used_component.ctx.edit_origin(components=[])
         return HorseChoice(used_component.ctx.custom_id)
 
+
+async def edit_in_game_message(ctx: SlashContext, msg: Message, horse_race_game: HorseRace) -> None:
+    content = f"### {GAME_NAME}\n"\
+        f"<@{ctx.author.id}>'s game\n\n"\
+        f"{horse_race_game.horses_position_string}"
+    await ctx.edit(msg, content=content)
+
+
+async def handle_end_game(ctx: SlashContext, msg: Message, horse_race_game: HorseRace) -> None:
+    chosen_horse = horse_race_game.chosen_horse_index + 1
+    if horse_race_game.is_player_win:
+        msg_suffix = f"Horse {chosen_horse} won the race! "\
+            f"You've been awarded {horse_race_game.winnings} talan!"
+    else:
+        msg_suffix = f"Horse {chosen_horse} did not win the race. You lost."
+
+    msg_content = f"### {GAME_NAME}\n"\
+        f"<@{ctx.author.id}>'s game\n\n"\
+        f"{horse_race_game.horses_position_string}\n\n"\
+        f"{msg_suffix}"
+
+    await ctx.edit(msg, content=msg_content)
+
 @slash_command(
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
@@ -100,3 +123,14 @@ async def horse_race(ctx: SlashContext, bet: int):
     horse_race_game = HorseRace(bet=bet)
     msg = await get_initial_message(ctx, horse_race_game)
     player_horse_choice = await wait_for_player_choice(ctx, msg)
+    horse_race_game.pick_winning_horse(int(player_horse_choice))
+
+    game_msg = await ctx.send("Game starting...")
+    await edit_in_game_message(ctx, game_msg, horse_race_game)
+    await sleep(1.5)
+    while not horse_race_game.is_game_over:
+        horse_race_game.step()
+        await edit_in_game_message(ctx, game_msg, horse_race_game)
+        await sleep(1.5)
+
+    await handle_end_game(ctx, game_msg, horse_race_game)
