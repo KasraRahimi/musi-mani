@@ -5,24 +5,24 @@ from .user_profile import profile, set_description, set_name
 
 __all__ = [
     # misc commands
-    'name',
-    'ping',
-    'anonymous',
-    'help',
+    "name",
+    "ping",
+    "anonymous",
+    "help",
     # user_profile
-    'profile',
-    'set_description',
-    'set_name',
+    "profile",
+    "set_description",
+    "set_name",
     # games
-    'blackjack',
-    'coin_toss',
-    'last_call',
-    'rps',
-    'horse_race',
+    "blackjack",
+    "coin_toss",
+    "last_call",
+    "rps",
+    "horse_race",
     # talan
-    'balance',
-    'add_funds',
-    'give',
-    'reward',
-    'weka_ale'
+    "balance",
+    "add_funds",
+    "give",
+    "reward",
+    "weka_ale",
 ]

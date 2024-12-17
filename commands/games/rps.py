@@ -2,7 +2,14 @@ import datetime
 from asyncio import exceptions, sleep
 from enum import StrEnum
 from random import randint
-from interactions import slash_command, SlashContext, Message, ActionRow, Button, ButtonStyle
+from interactions import (
+    slash_command,
+    SlashContext,
+    Message,
+    ActionRow,
+    Button,
+    ButtonStyle,
+)
 from interactions.api.events import Component
 from dataclasses import dataclass
 from database import BotUser
@@ -12,15 +19,18 @@ from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player
 WIN_MULTIPLIER = 2
 GAME_NAME = "Rock Paper Scissors"
 
+
 class Choice(StrEnum):
-    ROCK = 'rock',
-    PAPER = 'paper',
-    SCISSORS = 'scissors',
+    ROCK = ("rock",)
+    PAPER = ("paper",)
+    SCISSORS = ("scissors",)
+
 
 class Outcome(StrEnum):
-    PLAYER_ONE_WIN = 'player_one_win'
-    PLAYER_TWO_WIN = 'player_two_win'
-    TIE = 'tie'
+    PLAYER_ONE_WIN = "player_one_win"
+    PLAYER_TWO_WIN = "player_two_win"
+    TIE = "tie"
+
 
 @dataclass
 class RpsGameState:
@@ -47,7 +57,7 @@ class RpsGameState:
                     case Choice.PAPER:
                         return Outcome.PLAYER_TWO_WIN
                     case Choice.SCISSORS:
-                        return  Outcome.PLAYER_ONE_WIN
+                        return Outcome.PLAYER_ONE_WIN
 
             case (Choice.PAPER, second_choice):
                 match second_choice:
@@ -91,33 +101,37 @@ class RpsGameState:
 def get_emoji_from_choice(choice: Choice) -> str:
     match choice:
         case Choice.ROCK:
-            return '🪨'
+            return "🪨"
         case Choice.PAPER:
-            return '📄'
+            return "📄"
         case Choice.SCISSORS:
-            return '✂️'
+            return "✂️"
+
 
 def get_action_row() -> list[ActionRow]:
-    return [ActionRow(
-        Button(
-            custom_id=Choice.ROCK,
-            emoji=get_emoji_from_choice(Choice.ROCK),
-            label=Choice.ROCK.capitalize(),
-            style=ButtonStyle.PRIMARY
-        ),
-        Button(
-            custom_id=Choice.PAPER,
-            emoji=get_emoji_from_choice(Choice.PAPER),
-            label=Choice.PAPER.capitalize(),
-            style=ButtonStyle.GREEN,
-        ),
-        Button(
-            custom_id=Choice.SCISSORS,
-            emoji=get_emoji_from_choice(Choice.SCISSORS),
-            label=Choice.SCISSORS.capitalize(),
-            style=ButtonStyle.SECONDARY
+    return [
+        ActionRow(
+            Button(
+                custom_id=Choice.ROCK,
+                emoji=get_emoji_from_choice(Choice.ROCK),
+                label=Choice.ROCK.capitalize(),
+                style=ButtonStyle.PRIMARY,
+            ),
+            Button(
+                custom_id=Choice.PAPER,
+                emoji=get_emoji_from_choice(Choice.PAPER),
+                label=Choice.PAPER.capitalize(),
+                style=ButtonStyle.GREEN,
+            ),
+            Button(
+                custom_id=Choice.SCISSORS,
+                emoji=get_emoji_from_choice(Choice.SCISSORS),
+                label=Choice.SCISSORS.capitalize(),
+                style=ButtonStyle.SECONDARY,
+            ),
         )
-    )]
+    ]
+
 
 def get_random_choice() -> Choice:
     random_number = randint(1, 3)
@@ -129,22 +143,21 @@ def get_random_choice() -> Choice:
         case 3:
             return Choice.ROCK
 
+
 def get_message_title(ctx: SlashContext) -> str:
     user_id = str(ctx.author.id)
-    content = (
-        "### Rock Paper Scissors",
-        f"<@{user_id}>'s game",
-        ""
-    )
+    content = ("### Rock Paper Scissors", f"<@{user_id}>'s game", "")
     return "\n".join(content)
+
 
 async def get_initial_message(ctx: SlashContext) -> Message:
     content = (
         get_message_title(ctx),
         "Pick an option",
     )
-    content = '\n'.join(content)
+    content = "\n".join(content)
     return await ctx.send(content, components=get_action_row())
+
 
 async def get_player_choice(ctx: SlashContext, msg: Message) -> Choice | None:
     async def check(component_event: Component) -> bool:
@@ -156,38 +169,39 @@ async def get_player_choice(ctx: SlashContext, msg: Message) -> Choice | None:
 
     try:
         used_component: Component = await ctx.bot.wait_for_component(
-            components=get_action_row(),
-            messages=msg,
-            timeout=30,
-            check=check
+            components=get_action_row(), messages=msg, timeout=30, check=check
         )
     except exceptions.TimeoutError:
         return None
     else:
-        content = (
-            get_message_title(ctx),
-            "Waiting for bot choice..."
-        )
-        content = '\n'.join(content)
+        content = (get_message_title(ctx), "Waiting for bot choice...")
+        content = "\n".join(content)
         await used_component.ctx.edit_origin(content=content, components=[])
         return Choice(used_component.ctx.custom_id)
 
-async def handle_game_end(ctx: SlashContext, msg: Message, rps_game_state: RpsGameState) -> None:
+
+async def handle_game_end(
+    ctx: SlashContext, msg: Message, rps_game_state: RpsGameState
+) -> None:
     user_choice = rps_game_state.player_one_choice
     bot_choice = rps_game_state.player_two_choice
     content = [
         get_message_title(ctx),
         f"You picked {user_choice} ({get_emoji_from_choice(user_choice)})",
-        f"The bot picked {bot_choice} ({get_emoji_from_choice(bot_choice)})"
+        f"The bot picked {bot_choice} ({get_emoji_from_choice(bot_choice)})",
     ]
 
     match rps_game_state.outcome:
         case Outcome.PLAYER_ONE_WIN:
-            content.append(f"You won! You've been awarded {rps_game_state.player_one_winnings} talan!")
+            content.append(
+                f"You won! You've been awarded {rps_game_state.player_one_winnings} talan!"
+            )
         case Outcome.PLAYER_TWO_WIN:
             content.append(f"You lost.")
         case Outcome.TIE:
-            content.append(f"It's a tie. You've been given back {rps_game_state.player_one_winnings} talan")
+            content.append(
+                f"It's a tie. You've been given back {rps_game_state.player_one_winnings} talan"
+            )
 
     bot_user = BotUser(str(ctx.author.id))
     bot_user.deposit(rps_game_state.player_one_winnings)
@@ -196,13 +210,12 @@ async def handle_game_end(ctx: SlashContext, msg: Message, rps_game_state: RpsGa
         date=datetime.datetime.now(),
         bet=rps_game_state.bet,
         payout=rps_game_state.player_one_winnings,
-        is_win=rps_game_state.outcome == Outcome.PLAYER_ONE_WIN
+        is_win=rps_game_state.outcome == Outcome.PLAYER_ONE_WIN,
     )
     bot_user.add_game_stat(game_stat)
 
-    content = '\n'.join(content)
+    content = "\n".join(content)
     await ctx.edit(msg, content=content, components=[])
-
 
 
 @slash_command(
@@ -210,11 +223,13 @@ async def handle_game_end(ctx: SlashContext, msg: Message, rps_game_state: RpsGa
     description=COMMAND_DESCRIPTION,
     sub_cmd_name="rps",
     sub_cmd_description="Place a bet on a game of rock paper scissors. Try to beat the bot.",
-    options=[BET_OPTION]
+    options=[BET_OPTION],
 )
 async def rps(ctx: SlashContext, bet: int):
     if not can_player_bet(ctx, bet, do_withdraw=True):
-        await ctx.send("You do not have enough talan to place this bet.", ephemeral=True)
+        await ctx.send(
+            "You do not have enough talan to place this bet.", ephemeral=True
+        )
         return
 
     rps_game_state = RpsGameState(bet)

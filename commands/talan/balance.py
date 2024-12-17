@@ -3,11 +3,12 @@ from interactions import slash_command, InteractionContext
 from database import BotUser
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION
 
+
 @slash_command(
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
     sub_cmd_name="balance",
-    sub_cmd_description="Check your talan balance."
+    sub_cmd_description="Check your talan balance.",
 )
 async def balance(ctx: InteractionContext):
     await ctx.defer()

@@ -1,27 +1,29 @@
-from interactions import SlashContext, ActionRow, Button, ButtonStyle, Message, listen, slash_command
+from interactions import (
+    SlashContext,
+    ActionRow,
+    Button,
+    ButtonStyle,
+    Message,
+    listen,
+    slash_command,
+)
 from enum import Enum
 from interactions.api.events import Component
 from asyncio import exceptions
 
 
 class Choice(Enum):
-    YES = 'yes'
-    NO = 'no'
+    YES = "yes"
+    NO = "no"
+
 
 action_row = [
     ActionRow(
-        Button(
-            custom_id=Choice.YES.value,
-            style=ButtonStyle.GREEN,
-            label="Yes"
-        ),
-        Button(
-            custom_id=Choice.NO.value,
-            style=ButtonStyle.RED,
-            label="No"
-        )
+        Button(custom_id=Choice.YES.value, style=ButtonStyle.GREEN, label="Yes"),
+        Button(custom_id=Choice.NO.value, style=ButtonStyle.RED, label="No"),
     )
 ]
+
 
 @slash_command(name="name", description="Ask the bot what your name is.")
 async def name(ctx: SlashContext):
@@ -36,12 +38,18 @@ async def name(ctx: SlashContext):
     await ctx.send(f"Your name is {username}, though here, we call you {nickname}")
 
     # TODO: add a same user check or something cuz this behaviour is fkn whack
-    message = await ctx.send("Did I get that right?", ephemeral=True, components=action_row)
+    message = await ctx.send(
+        "Did I get that right?", ephemeral=True, components=action_row
+    )
 
     try:
-        used_component: Component = await bot.wait_for_component(components=action_row, timeout=30)
+        used_component: Component = await bot.wait_for_component(
+            components=action_row, timeout=30
+        )
     except exceptions.TimeoutError:
-        await ctx.edit(message, content="Oops, you took too long to answer", components=[])
+        await ctx.edit(
+            message, content="Oops, you took too long to answer", components=[]
+        )
     else:
         match used_component.ctx.custom_id:
             case Choice.YES.value:
@@ -49,4 +57,4 @@ async def name(ctx: SlashContext):
             case Choice.NO.value:
                 await ctx.send("That's a shame", ephemeral=True)
 
-        await ctx.edit(message,components=[])
+        await ctx.edit(message, components=[])

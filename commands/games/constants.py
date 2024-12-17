@@ -11,7 +11,7 @@ BET_OPTION = SlashCommandOption(
     description="The bet you wish to place on the game",
     required=True,
     type=OptionType.INTEGER,
-    min_value=1
+    min_value=1,
 )
 
 INSUFFICIENT_FUNDS_MSG = "You do not have enough talan to place that bet"

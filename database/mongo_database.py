@@ -3,6 +3,7 @@ from constants import MONGO_DB_URI
 
 DATABASE_NAME = "musi-mani"
 
+
 class BotDatabase:
     __instance = None
 

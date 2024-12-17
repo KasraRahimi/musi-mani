@@ -1,13 +1,27 @@
 from dataclasses import dataclass, asdict
 from random import randint
-from interactions import slash_command, SlashContext, Embed, Color, EmbedField, EmbedAttachment, SlashCommandOption, \
-    OptionType, User, Member, Client, EmbedAuthor, Timestamp
+from interactions import (
+    slash_command,
+    SlashContext,
+    Embed,
+    Color,
+    EmbedField,
+    EmbedAttachment,
+    SlashCommandOption,
+    OptionType,
+    User,
+    Member,
+    Client,
+    EmbedAuthor,
+    Timestamp,
+)
 from requests import get
 from datetime import datetime
 from database import BotUser
 from models.game_stat import GameStat
 
 # BASE_URL = "https://api.quotable.io"
+
 
 @dataclass
 class GameStatsSummary:
@@ -21,11 +35,12 @@ class GameStatsSummary:
             self.total_wins += 1
         self.earnings += game_stat.payout - game_stat.bet
 
+
 USER_OPTION = SlashCommandOption(
     name="user",
     description="The user whose profile you wish to see. If none, you'll see yours",
     type=OptionType.USER,
-    required=False
+    required=False,
 )
 
 # def get_random_quote() -> str:
@@ -36,7 +51,10 @@ USER_OPTION = SlashCommandOption(
 #         return response.json().pop()["content"]
 #     return "No description"
 
-def separate_game_stats_to_dict(game_stats: list[GameStat]) -> dict[str, list[GameStat]]:
+
+def separate_game_stats_to_dict(
+    game_stats: list[GameStat],
+) -> dict[str, list[GameStat]]:
     game_stat_dict = dict()
     for game_stat in game_stats:
         if game_stat.name not in game_stat_dict:
@@ -45,13 +63,17 @@ def separate_game_stats_to_dict(game_stats: list[GameStat]) -> dict[str, list[Ga
             game_stat_dict[game_stat.name].append(game_stat)
     return game_stat_dict
 
+
 def summarize_game_stats(game_stats: list[GameStat]) -> GameStatsSummary:
     summary = GameStatsSummary()
     for game_stat in game_stats:
         summary.add_game_stat(game_stat)
     return summary
 
-def get_game_stats_embed_fields(game_stats: list[GameStat], is_include_total: bool=False) -> list[EmbedField]:
+
+def get_game_stats_embed_fields(
+    game_stats: list[GameStat], is_include_total: bool = False
+) -> list[EmbedField]:
     embed_fields: list[EmbedField] = []
     game_stats_dict = separate_game_stats_to_dict(game_stats)
 
@@ -66,16 +88,9 @@ def get_game_stats_embed_fields(game_stats: list[GameStat], is_include_total: bo
             field_value.append(f"{title}: **{stat}**")
         field_value = "\n".join(field_value)
 
-        embed_fields.append(
-            EmbedField(
-                name=name,
-                value=field_value,
-                inline=True
-            )
-        )
+        embed_fields.append(EmbedField(name=name, value=field_value, inline=True))
 
     return embed_fields
-
 
 
 def get_random_color() -> Color:
@@ -84,12 +99,11 @@ def get_random_color() -> Color:
     blue = randint(0, 255)
     return Color((red, green, blue))
 
+
 @slash_command(
-    name="profile",
-    description="See your user profile.",
-    options=[USER_OPTION]
+    name="profile", description="See your user profile.", options=[USER_OPTION]
 )
-async def profile(ctx: SlashContext, user: User | Member | None=None):
+async def profile(ctx: SlashContext, user: User | Member | None = None):
     user = user or ctx.author
     if user.bot:
         await ctx.send("Now why would a bot have a profile?", ephemeral=True)
@@ -102,7 +116,7 @@ async def profile(ctx: SlashContext, user: User | Member | None=None):
 
     game_stats = bot_user.game_stats
     embed_fields = [
-        EmbedField(name='Balance', value=f"{bot_user.balance} talan", inline=False),
+        EmbedField(name="Balance", value=f"{bot_user.balance} talan", inline=False),
         *get_game_stats_embed_fields(game_stats),
     ]
     current_timestamp = Timestamp.fromdatetime(datetime.now())
@@ -115,5 +129,3 @@ async def profile(ctx: SlashContext, user: User | Member | None=None):
         timestamp=current_timestamp,
     )
     await ctx.send(embed=embed)
-
-

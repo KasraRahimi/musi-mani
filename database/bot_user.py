@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 COLLECTION_NAME = "users"
 
+
 class BotUser:
     __collection = BotDatabase().get_collection(COLLECTION_NAME)
 
@@ -18,20 +19,21 @@ class BotUser:
 
     def __create_new_user(self):
         if self.__find_user() is None:
-            self.__collection.insert_one({
-                "_id": self.user_id,
-                "last_reward": None,
-                "balance": 0,
-            })
+            self.__collection.insert_one(
+                {
+                    "_id": self.user_id,
+                    "last_reward": None,
+                    "balance": 0,
+                }
+            )
 
     def __find_user(self):
         return self.__collection.find_one({"_id": self.user_id})
 
-    def __update(self, update: Mapping[str, Any] | Sequence[Mapping[str, Any]]) -> UpdateResult:
-        return self.__collection.update_one(
-            {"_id": self.user_id},
-            update
-        )
+    def __update(
+        self, update: Mapping[str, Any] | Sequence[Mapping[str, Any]]
+    ) -> UpdateResult:
+        return self.__collection.update_one({"_id": self.user_id}, update)
 
     @property
     def balance(self):
@@ -63,7 +65,6 @@ class BotUser:
         game_stats = map(GameStat.from_json, raw_game_stats)
         return list(game_stats)
 
-
     def __increment_balance(self, amount: int):
         self.__update({"$inc": {"balance": amount}})
 
@@ -89,14 +90,9 @@ class BotUser:
         delta = now - last_reward
         return delta
 
-
     def claim_reward(self, reward_amount: int):
         self.deposit(reward_amount)
         self.__update({"$set": {"last_reward": datetime.now()}})
 
     def add_game_stat(self, game_stat: GameStat) -> None:
-        self.__update(
-            {
-                "$push": {"game_stats": game_stat.to_json()}
-            }
-        )
+        self.__update({"$push": {"game_stats": game_stat.to_json()}})

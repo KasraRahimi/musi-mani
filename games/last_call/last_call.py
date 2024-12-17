@@ -1,13 +1,13 @@
 from enum import Enum
 from random import random
 
+
 class Outcome(Enum):
-    CRASH = 'crash'
-    CASH_OUT = 'cash_out'
+    CRASH = "crash"
+    CASH_OUT = "cash_out"
 
 
 class LastCall:
-
     def __init__(self, bet: int, odds_of_crash_per_iteration: float):
         self.bet = bet
         self.odds = odds_of_crash_per_iteration

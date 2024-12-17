@@ -8,13 +8,12 @@ NAME_OPTION = SlashCommandOption(
     type=OptionType.STRING,
     min_length=1,
     max_length=32,
-    required=True
+    required=True,
 )
 
+
 @slash_command(
-    name="set-name",
-    description="Set your name with the bot.",
-    options=[NAME_OPTION]
+    name="set-name", description="Set your name with the bot.", options=[NAME_OPTION]
 )
 async def set_name(ctx: SlashContext, name: str):
     bot_user = BotUser(str(ctx.author.id))

@@ -2,6 +2,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from typing import Self
 
+
 @dataclass
 class GameStat:
     name: str
@@ -14,11 +15,11 @@ class GameStat:
     def from_json(cls, json: dict) -> Self | None:
         try:
             return cls(
-                name=json['name'],
-                date=json['date'],
-                bet=json['bet'],
-                payout=json['payout'],
-                is_win=json['is_win']
+                name=json["name"],
+                date=json["date"],
+                bet=json["bet"],
+                payout=json["payout"],
+                is_win=json["is_win"],
             )
         except KeyError:
             return None

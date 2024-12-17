@@ -7,13 +7,14 @@ description_option = SlashCommandOption(
     type=OptionType.STRING,
     required=True,
     min_length=1,
-    max_length=128
+    max_length=128,
 )
+
 
 @slash_command(
     name="set-description",
     description="Set your profile description.",
-    options=[description_option]
+    options=[description_option],
 )
 async def set_description(ctx: SlashContext, description: str):
     bot_user = BotUser(str(ctx.author.id))

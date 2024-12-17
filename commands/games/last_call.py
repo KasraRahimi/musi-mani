@@ -1,8 +1,18 @@
 import datetime
 from asyncio import sleep
 
-from interactions import slash_command, SlashContext, Button, ButtonStyle, listen, Message, Snowflake, SnowflakeObject, \
-    component_callback, ComponentContext
+from interactions import (
+    slash_command,
+    SlashContext,
+    Button,
+    ButtonStyle,
+    listen,
+    Message,
+    Snowflake,
+    SnowflakeObject,
+    component_callback,
+    ComponentContext,
+)
 from interactions.api.events import Component
 
 from database import BotUser
@@ -13,18 +23,20 @@ from .blackjack import GAME_NAME
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
 from ..utils import get_button_id, ButtonIdInfo
 
-BUTTON_ID = 'cash_out'
-GAME_NAME = 'Last Call'
+BUTTON_ID = "cash_out"
+GAME_NAME = "Last Call"
 CRASH_ODDS = 1 / 7
 
-def cash_out_button(ctx: SlashContext, is_disabled: bool=False):
+
+def cash_out_button(ctx: SlashContext, is_disabled: bool = False):
     return Button(
         custom_id=get_button_id(BUTTON_ID, ctx),
         style=ButtonStyle.PRIMARY,
         label="Cash out",
-        emoji='💰',
-        disabled=is_disabled
+        emoji="💰",
+        disabled=is_disabled,
     )
+
 
 def get_in_game_message_content(ctx: SlashContext, last_call_game: LastCall) -> str:
     content = (
@@ -32,26 +44,37 @@ def get_in_game_message_content(ctx: SlashContext, last_call_game: LastCall) -> 
         f"<@{ctx.author.id}>'s game",
         "",
         "🙂",
-        f"__potential win__: {last_call_game.potential_winnings} talan"
+        f"__potential win__: {last_call_game.potential_winnings} talan",
     )
     return "\n".join(content)
 
-async def get_initial_message(ctx: SlashContext, last_call_game: LastCall) -> Message:
-    return await ctx.send(get_in_game_message_content(ctx, last_call_game), components=cash_out_button(ctx))
 
-async def edit_game_message(ctx: SlashContext, msg: Message, last_call_game: LastCall) -> None:
+async def get_initial_message(ctx: SlashContext, last_call_game: LastCall) -> Message:
+    return await ctx.send(
+        get_in_game_message_content(ctx, last_call_game),
+        components=cash_out_button(ctx),
+    )
+
+
+async def edit_game_message(
+    ctx: SlashContext, msg: Message, last_call_game: LastCall
+) -> None:
     await ctx.edit(msg, content=get_in_game_message_content(ctx, last_call_game))
 
-async def edit_to_win_message(ctx: SlashContext, msg: Message, last_call_game: LastCall) -> None:
+
+async def edit_to_win_message(
+    ctx: SlashContext, msg: Message, last_call_game: LastCall
+) -> None:
     content = (
         "### Last Call",
         f"<@{ctx.author.id}>'s game",
         "",
         "😎",
-        f"You just cashed out and won **{last_call_game.winnings}** talan!!"
+        f"You just cashed out and won **{last_call_game.winnings}** talan!!",
     )
     content = "\n".join(content)
     await ctx.edit(msg, content=content, components=cash_out_button(ctx, True))
+
 
 async def edit_to_lose_message(ctx: SlashContext, msg: Message) -> None:
     content = (
@@ -59,17 +82,18 @@ async def edit_to_lose_message(ctx: SlashContext, msg: Message) -> None:
         f"<@{ctx.author.id}>'s game",
         "",
         "💥",
-        f"You just crashed and lost your bet."
+        f"You just crashed and lost your bet.",
     )
     content = "\n".join(content)
     await ctx.edit(msg, content=content, components=cash_out_button(ctx, True))
 
+
 @slash_command(
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
-    sub_cmd_name='last-call',
-    sub_cmd_description='Place a bet on a game of last call. Cash out before the game crashes.',
-    options=[BET_OPTION]
+    sub_cmd_name="last-call",
+    sub_cmd_description="Place a bet on a game of last call. Cash out before the game crashes.",
+    options=[BET_OPTION],
 )
 async def last_call(ctx: SlashContext, bet: int):
     if not can_player_bet(ctx, bet, do_withdraw=True):
@@ -90,6 +114,7 @@ async def last_call(ctx: SlashContext, bet: int):
 
         last_call_game.cash_out()
         await cmp_ctx.edit_origin()
+
     ctx.bot.add_component_callback(on_component)
     # == listener added to bot ==
 
@@ -113,6 +138,6 @@ async def last_call(ctx: SlashContext, bet: int):
         date=datetime.datetime.now(),
         bet=bet,
         payout=last_call_game.winnings,
-        is_win=last_call_game.outcome == Outcome.CASH_OUT
+        is_win=last_call_game.outcome == Outcome.CASH_OUT,
     )
     bot_user.add_game_stat(game_stat)

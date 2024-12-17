@@ -2,6 +2,7 @@ from enum import Enum
 from .card import Card, Rank, Suit
 from random import shuffle
 
+
 class Outcome(Enum):
     BLACKJACK = 0
     WIN = 1
@@ -28,7 +29,7 @@ class Blackjack:
     WIN_MULTIPLIER = 2
     BLACKJACK_MULTIPLIER = 2.5
 
-    def __init__(self, bet: int, num_of_decks: int=2):
+    def __init__(self, bet: int, num_of_decks: int = 2):
         self.outcome: None | Outcome = None
         self.bet: int = bet
         self.deck: list[Card] = self.__get_shuffled_deck(num_of_decks)
@@ -129,6 +130,7 @@ class Blackjack:
             case Outcome.DRAW:
                 winnings = self.bet
         return int(winnings)
+
 
 # def get_player_input() -> int:
 #     print("1 - hit")

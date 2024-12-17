@@ -4,9 +4,11 @@ from typing import Self
 
 SEPERATOR = "."
 
+
 def get_button_id(value: str, ctx: InteractionContext) -> str:
     button_id = map(str, (value, ctx.id, ctx.author.id))
     return SEPERATOR.join(button_id)
+
 
 @dataclass
 class ButtonIdInfo:

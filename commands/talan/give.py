@@ -1,13 +1,18 @@
-from interactions import SlashCommandOption, OptionType, slash_command, InteractionContext
+from interactions import (
+    SlashCommandOption,
+    OptionType,
+    slash_command,
+    InteractionContext,
+)
 from interactions.models.discord.user import Member
 
 from commands.talan.constants import COMMAND_NAME, COMMAND_DESCRIPTION
 from database import BotUser
 
 USER = SlashCommandOption(
-    name='user',
+    name="user",
     required=True,
-    description='The user to give the talan to',
+    description="The user to give the talan to",
     type=OptionType.USER,
 )
 
@@ -18,6 +23,7 @@ AMOUNT = SlashCommandOption(
     min_value=0,
     required=True,
 )
+
 
 @slash_command(
     name=COMMAND_NAME,

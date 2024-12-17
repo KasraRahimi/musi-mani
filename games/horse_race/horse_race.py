@@ -6,9 +6,11 @@ from itertools import product
 from time import sleep
 from dataclasses import dataclass
 
+
 @dataclass
 class HorseInfo:
     index: int
+    name: str
     win_odds: float
 
     @property
@@ -16,7 +18,9 @@ class HorseInfo:
         return 1 / self.win_odds
 
 
-def generate_horse_step_probabilities(horses: list[Horse], num_of_trials: int=2) -> None:
+def generate_horse_step_probabilities(
+    horses: list[Horse], num_of_trials: int = 2
+) -> None:
     for horse in horses:
         random_number = 0
         for _ in range(num_of_trials):
@@ -34,15 +38,15 @@ def normalize_horse_step_probabilities(horses: list[Horse]) -> None:
 
 
 def calculate_probability_of_win_with_steps(
-        index_of_winner: int,
-        num_of_loser_steps: tuple[int, int, int],
-        step_probabilities: tuple[float, ...],
-        steps_to_victory: int=7
+    index_of_winner: int,
+    num_of_loser_steps: tuple[int, int, int],
+    step_probabilities: tuple[float, ...],
+    steps_to_victory: int = 7,
 ) -> float:
     num_of_steps = (
         *num_of_loser_steps[:index_of_winner],
         steps_to_victory - 1,
-        *num_of_loser_steps[index_of_winner:]
+        *num_of_loser_steps[index_of_winner:],
     )
     probability_product = 1
     for i, probability in enumerate(step_probabilities):
@@ -58,10 +62,15 @@ def calculate_probability_of_win_with_steps(
 
 
 class HorseRace:
-    def __init__(self, bet: int, num_of_steps_to_victory: int=7, step_probabilities: tuple[float, ...]=None):
+    def __init__(
+        self,
+        bet: int,
+        num_of_steps_to_victory: int = 7,
+        step_probabilities: tuple[float, ...] = None,
+    ):
         self.num_of_steps_to_victory = num_of_steps_to_victory
         self.bet = bet
-        self.horses = [Horse() for _ in range(4)]
+        self.horses = [Horse(name=f"{i}") for i in range(4)]
         self.chosen_horse_index = None
         if step_probabilities is None:
             generate_horse_step_probabilities(self.horses)
@@ -123,7 +132,9 @@ class HorseRace:
     def step(self) -> None:
         indices = tuple(range(len(self.horses)))
         if self.race_winner_index is None:
-            random_horse_index = choices(indices, weights=self.horse_step_probabilities).pop()
+            random_horse_index = choices(
+                indices, weights=self.horse_step_probabilities
+            ).pop()
             self.horses[random_horse_index].step()
 
     @property
@@ -135,7 +146,9 @@ class HorseRace:
 
     @property
     def potential_payouts(self) -> tuple[int, ...]:
-        payouts = [int(self.bet * horse_info.win_multiplier) for horse_info in self.horse_infos]
+        payouts = [
+            int(self.bet * horse_info.win_multiplier) for horse_info in self.horse_infos
+        ]
         return tuple(payouts)
 
     @property
@@ -160,11 +173,12 @@ class HorseRace:
         else:
             return False
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     horse_race = HorseRace(bet=100, num_of_steps_to_victory=7)
     print(horse_race.horses_position_string)
     while horse_race.race_winner_index is None:
-        print("~ "*10)
+        print("~ " * 10)
         horse_race.step()
         print(horse_race.horses_position_string)
         sleep(1)
