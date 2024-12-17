@@ -3,6 +3,7 @@ from horse import Horse
 from random import random, choices
 from math import comb
 from itertools import product
+from time import sleep
 
 def generate_horse_step_probabilities(horses: list[Horse], num_of_trials: int=2) -> None:
     for horse in horses:
@@ -96,6 +97,18 @@ class HorseRace:
             self.horses[random_horse_index].step()
 
     @property
+    def horses_position_string(self) -> str:
+        position_strings = []
+        for horse in self.horses:
+            position_strings.append(horse.position_string(self.num_of_steps_to_victory))
+        return "\n".join(position_strings)
+
+    @property
+    def potential_payouts(self) -> tuple[int, ...]:
+        payouts = [int(self.bet / odds) for odds in self.win_probabilities]
+        return tuple(payouts)
+
+    @property
     def winnings(self) -> int:
         if self.chosen_horse_index is None:
             return 0
@@ -107,14 +120,14 @@ class HorseRace:
         else:
             return 0
 
-
-
 if __name__ == '__main__':
-    horse_race = HorseRace(bet=0, num_of_steps_to_victory=7)
-    for horse in horse_race.horses:
-        print(horse)
+    horse_race = HorseRace(bet=100, num_of_steps_to_victory=7)
+    print(horse_race.horses_position_string)
+    while horse_race.race_winner_index is None:
+        print("="*10)
+        horse_race.step()
+        print(horse_race.horses_position_string)
+        sleep(1)
     print(horse_race.win_probabilities)
-    print(horse_race.win_probabilities)
-    print(horse_race.win_probabilities)
-    print(horse_race.win_probabilities)
+    print(horse_race.potential_payouts)
     print(sum(horse_race.win_probabilities))
