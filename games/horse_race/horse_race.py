@@ -153,6 +153,13 @@ class HorseRace:
         else:
             return 0
 
+    @property
+    def is_player_win(self) -> bool:
+        if self.is_game_over:
+            return self.chosen_horse_index == self.race_winner_index
+        else:
+            return False
+
 if __name__ == '__main__':
     horse_race = HorseRace(bet=100, num_of_steps_to_victory=7)
     print(horse_race.horses_position_string)
