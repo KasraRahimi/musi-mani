@@ -53,8 +53,9 @@ def get_horse_info_embed(ctx: SlashContext, horse_race_game: HorseRace) -> Embed
     for i, horse_info in enumerate(horse_race_game.horse_infos):
         embed_field = EmbedField(
             name=f"Horse {i+1}",
-            value=f"Odds of winning: **{horse_info.win_odds * 100:.2f}%**\n"
-            f"Payout multiplier: **{horse_info.win_multiplier:.2f}x**",
+            value= f"Name: **{horse_info.name}**\n"\
+                f"Odds of winning: **{horse_info.win_odds * 100:.2f}%**\n"\
+                f"Payout multiplier: **{horse_info.win_multiplier:.2f}x**",
             inline=False,
         )
         embed_fields.append(embed_field)
@@ -114,14 +115,14 @@ async def edit_in_game_message(
 async def handle_end_game(
     ctx: SlashContext, msg: Message, horse_race_game: HorseRace
 ) -> None:
-    chosen_horse = horse_race_game.chosen_horse_index + 1
+    chosen_horse = horse_race_game.chosen_horse_info.name
     if horse_race_game.is_player_win:
         msg_suffix = (
-            f"Horse {chosen_horse} won the race! "
+            f"{chosen_horse} won the race! "
             f"You've been awarded {horse_race_game.winnings} talan!"
         )
     else:
-        msg_suffix = f"Horse {chosen_horse} did not win the race. You lost."
+        msg_suffix = f"{chosen_horse} did not win the race. You lost."
 
     msg_content = (
         f"### {GAME_NAME}\n"

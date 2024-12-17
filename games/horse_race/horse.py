@@ -13,7 +13,7 @@ class Horse:
         self.number_of_steps += 1
 
     def position_string(
-        self, steps_to_victory: int, race_track_character: str = "="
+        self, steps_to_victory: int, race_track_character: str = "=",
     ) -> str:
         if steps_to_victory < 0:
             raise ValueError("steps_to_victory cannot be negative")
@@ -33,7 +33,7 @@ class Horse:
             #     characters.append(race_track_character)
 
         position_string = " ".join(characters)
-        return position_string[::-1]
+        return f"__{self.name}__\n" + position_string[::-1]
 
 
 if __name__ == "__main__":

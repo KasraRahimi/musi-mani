@@ -74,18 +74,18 @@ class HorseRace:
         self,
         bet: int,
         num_of_steps_to_victory: int = 7,
-        step_probabilities: tuple[float, ...] = None,
+        horses: list[Horse] = None,
     ):
         self.num_of_steps_to_victory = num_of_steps_to_victory
         self.bet = bet
-        self.horses = [Horse(name=f"{i}") for i in range(4)]
         self.chosen_horse_index = None
-        if step_probabilities is None:
-            generate_horse_step_probabilities(self.horses)
-            normalize_horse_step_probabilities(self.horses)
+
+        if horses is None:
+            horses = get_random_horses(count=4)
+            normalize_horse_step_probabilities(horses)
+            self.horses = horses
         else:
-            for horse, probablity in zip(self.horses, step_probabilities):
-                horse.step_probability = probablity
+            self.horses = horses
 
     @property
     def horse_step_probabilities(self) -> tuple[float, ...]:
@@ -112,6 +112,7 @@ class HorseRace:
             horse_infos.append(
                 HorseInfo(
                     index=i,
+                    name=horse.name,
                     win_odds=self.win_probabilities[i],
                 )
             )
@@ -136,6 +137,13 @@ class HorseRace:
             return None
         else:
             return self.horse_infos[self.race_winner_index]
+
+    @property
+    def chosen_horse_info(self) -> HorseInfo | None:
+        if self.chosen_horse_index is not None:
+            return self.horse_infos[self.chosen_horse_index]
+        else:
+            return None
 
     def step(self) -> None:
         indices = tuple(range(len(self.horses)))
