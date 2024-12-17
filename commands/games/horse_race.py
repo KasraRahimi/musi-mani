@@ -1,3 +1,4 @@
+import datetime
 from enum import StrEnum
 from interactions import slash_command, SlashContext, ActionRow, Button, ButtonStyle, Message, Embed, EmbedAuthor, \
     EmbedField, Client, ClientT
@@ -6,6 +7,7 @@ from asyncio import exceptions, sleep
 
 from database import BotUser
 from games.horse_race import HorseRace
+from models.game_stat import GameStat
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet, INSUFFICIENT_FUNDS_MSG
 
 GAME_NAME = "Horse Race"
@@ -111,7 +113,14 @@ async def handle_end_game(ctx: SlashContext, msg: Message, horse_race_game: Hors
 
     bot_user = BotUser(str(ctx.author.id))
     bot_user.deposit(horse_race_game.winnings)
-
+    game_stat = GameStat(
+        name=GAME_NAME,
+        date=datetime.datetime.now(),
+        bet=horse_race_game.bet,
+        payout=horse_race_game.winnings,
+        is_win=horse_race_game.is_player_win
+    )
+    bot_user.add_game_stat(game_stat)
     await ctx.edit(msg, content=msg_content)
 
 @slash_command(
