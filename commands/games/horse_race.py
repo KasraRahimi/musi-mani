@@ -3,6 +3,8 @@ from interactions import slash_command, SlashContext, ActionRow, Button, ButtonS
     EmbedField, Client, ClientT
 from interactions.api.events import Component
 from asyncio import exceptions, sleep
+
+from database import BotUser
 from games.horse_race import HorseRace
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet, INSUFFICIENT_FUNDS_MSG
 
@@ -107,6 +109,9 @@ async def handle_end_game(ctx: SlashContext, msg: Message, horse_race_game: Hors
         f"{horse_race_game.horses_position_string}\n\n"\
         f"{msg_suffix}"
 
+    bot_user = BotUser(str(ctx.author.id))
+    bot_user.deposit(horse_race_game.winnings)
+
     await ctx.edit(msg, content=msg_content)
 
 @slash_command(
@@ -117,7 +122,7 @@ async def handle_end_game(ctx: SlashContext, msg: Message, horse_race_game: Hors
     options=[BET_OPTION]
 )
 async def horse_race(ctx: SlashContext, bet: int):
-    if not can_player_bet(ctx, bet, do_withdraw=False):
+    if not can_player_bet(ctx, bet, do_withdraw=True):
         await ctx.send(INSUFFICIENT_FUNDS_MSG, ephemeral=True)
         return
     horse_race_game = HorseRace(bet=bet)
