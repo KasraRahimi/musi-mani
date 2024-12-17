@@ -1,11 +1,9 @@
 from functools import cached_property
-
-from .horse_pool import HORSE_POOL
-from .horse import Horse
+from games.horse_race.horse_pool import HORSE_POOL
+from games.horse_race.horse import Horse
 from random import random, choices
 from math import comb
 from itertools import product
-from time import sleep
 from dataclasses import dataclass
 
 
@@ -41,7 +39,11 @@ def normalize_horse_step_probabilities(horses: list[Horse]) -> None:
 
 def get_random_horses(count: int=4) -> list[Horse]:
     weights = [horse.selection_weight for horse in HORSE_POOL]
-    horses = choices(HORSE_POOL, weights=weights, k=count)
+    horses = []
+    while len(horses) < count:
+        horse_to_add = choices(HORSE_POOL, weights=weights).pop()
+        if horse_to_add not in horses:
+            horses.append(horse_to_add.copy())
     return horses
 
 
@@ -189,15 +191,26 @@ class HorseRace:
         else:
             return False
 
+    @classmethod
+    def simulate_horse_races(
+            cls,
+            horses: list[Horse],
+            num_of_steps_to_victory:int = 7,
+            num_of_trials: int = 100
+    ) -> tuple[float, ...]:
+        game_wins = [0 for _ in range(len(horses))]
+        for i in range(num_of_trials):
+            new_horses = list(map(lambda horse: horse.copy(), horses))
+            horse_race = cls(bet=0, num_of_steps_to_victory=num_of_steps_to_victory, horses=new_horses)
+            while not horse_race.is_game_over:
+                horse_race.step()
+            game_wins[horse_race.race_winner_index] += 1
+
+        return tuple([game_win / num_of_trials for game_win in game_wins])
+
 
 if __name__ == "__main__":
     horse_race = HorseRace(bet=100, num_of_steps_to_victory=7)
-    print(horse_race.horses_position_string)
-    while horse_race.race_winner_index is None:
-        print("~ " * 10)
-        horse_race.step()
-        print(horse_race.horses_position_string)
-        sleep(1)
-    print(horse_race.win_probabilities)
-    print(horse_race.potential_payouts)
-    print(sum(horse_race.win_probabilities))
+    simulation_outcome = HorseRace.simulate_horse_races(horse_race.horses, 7, 10_000)
+    for horse_info, win_odds, simulation_odds in zip(horse_race.horse_infos, horse_race.win_probabilities, simulation_outcome):
+        print(f"{horse_info.name}\ntheoretical odds: {horse_info.win_odds:.3f}\nsimulation odds: {simulation_odds:.3f}\n")
