@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+from typing import Self
 
 @dataclass
 class Horse:
@@ -11,6 +11,15 @@ class Horse:
 
     def step(self) -> None:
         self.number_of_steps += 1
+
+    def copy(self) -> Self:
+        return Horse(
+            name=self.name,
+            number_of_steps=self.number_of_steps,
+            step_probability=self.step_probability,
+            emoji=self.emoji,
+            selection_weight=self.selection_weight,
+        )
 
     def position_string(
         self, steps_to_victory: int, race_track_character: str = "=",
