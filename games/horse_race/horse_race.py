@@ -1,5 +1,5 @@
 from functools import cached_property
-from horse import Horse
+from .horse import Horse
 from random import random, choices
 from math import comb
 from itertools import product
