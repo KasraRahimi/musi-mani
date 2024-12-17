@@ -11,11 +11,12 @@ from interactions import (
     EmbedAuthor,
     EmbedField,
     Client,
-    ClientT,
+    ClientT, EmbedFooter,
+    User
 )
 from interactions.api.events import Component
 from asyncio import exceptions, sleep
-
+from interactions.api.http.http_requests import UserRequests
 from database import BotUser
 from games.horse_race import HorseRace
 from models.game_stat import GameStat
@@ -47,7 +48,7 @@ ACTION_ROW = [
 ]
 
 
-def get_horse_info_embed(ctx: SlashContext, horse_race_game: HorseRace) -> Embed:
+async def get_horse_info_embed(ctx: SlashContext, horse_race_game: HorseRace) -> Embed:
     author = EmbedAuthor(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     embed_fields = []
     for i, horse_info in enumerate(horse_race_game.horse_infos):
@@ -63,18 +64,27 @@ def get_horse_info_embed(ctx: SlashContext, horse_race_game: HorseRace) -> Embed
         "Pick which horse you think will win."
         "The less likely that the horse you pick wins, the larger the payout if they do win."
     )
+
+    try:
+        bot: Client = ctx.bot
+        kiwa = await bot.fetch_user(user_id=138427437364150273)
+    except Exception:
+        footer = None
+    else:
+        footer = EmbedFooter(text=f"Credit to {kiwa.username} for the naming systems", icon_url=kiwa.avatar_url)
     return Embed(
         author=author,
         title=f"{GAME_NAME}",
         description=description,
         fields=embed_fields,
+        footer=footer
     )
 
 
 async def get_initial_message(ctx: SlashContext, horse_race_game: HorseRace) -> Message:
     return await ctx.send(
         f"<@{ctx.author.id}>",
-        embed=get_horse_info_embed(ctx, horse_race_game),
+        embed=await get_horse_info_embed(ctx, horse_race_game),
         components=ACTION_ROW,
     )
 
