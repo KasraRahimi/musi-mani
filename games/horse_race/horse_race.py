@@ -213,4 +213,4 @@ if __name__ == "__main__":
     horse_race = HorseRace(bet=100, num_of_steps_to_victory=7)
     simulation_outcome = HorseRace.simulate_horse_races(horse_race.horses, 7, 10_000)
     for horse_info, win_odds, simulation_odds in zip(horse_race.horse_infos, horse_race.win_probabilities, simulation_outcome):
-        print(f"{horse_info.name}\ntheoretical odds: {horse_info.win_odds:.3f}\nsimulation odds: {simulation_odds:.3f}\n")
+        print(f"{horse_info.name}\ntheoretical odds: {horse_info.win_odds*100:.3f}%\nsimulation odds: {simulation_odds*100:.3f}%\n")
