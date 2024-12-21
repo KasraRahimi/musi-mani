@@ -13,3 +13,6 @@ DB_NAME = getenv("DB_NAME")
 ROOT_DIRECTORY = Path(__file__).parent.resolve()
 
 MAIN_LOGGER = "bot_logger"
+
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
