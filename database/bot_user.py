@@ -1,7 +1,7 @@
 from constants import DATE_FORMAT
 from models.game_stat import GameStat
 from models.user_info import UserInfo
-from new_database.sql_db import SQLDb
+from database.sql_db import SQLDb
 from datetime import datetime, timedelta
 
 USER_TABLE_NAME = "users"
