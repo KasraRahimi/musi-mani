@@ -10,7 +10,7 @@ from interactions import (
 from interactions.api.events import Component
 from asyncio import exceptions
 
-from database.mongo_database import BotDatabase
+from database.sql_db import SQLDb
 from .constants import COMMAND_NAME, COMMAND_DESCRIPTION
 from enum import Enum
 
@@ -53,9 +53,8 @@ async def get_owner_confirmation(ctx: SlashContext) -> None | str:
 
 
 async def delete_all_account(ctx: SlashContext):
-    collection = BotDatabase().get_collection("users")
-    delete_data = collection.delete_many({})
-    delete_count = delete_data.deleted_count
+    db = SQLDb()
+    delete_count = db.reset_all_data()
     await ctx.send("mi weka e mani ale. mani pi jan {} li weka".format(delete_count))
 
 
