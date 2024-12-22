@@ -3,11 +3,14 @@ from mysql.connector.pooling import PooledMySQLConnection
 from constants import DB_NAME, DB_USERNAME, DB_PASSWORD
 import mysql.connector as sql
 
+COLLATION = "utf8mb4_general_ci"
+
 SQL_CONFIG = {
     "host": "localhost",
     "user": DB_USERNAME,
     "password": DB_PASSWORD,
     "database": DB_NAME,
+    "collation": COLLATION,
 }
 
 class SQLDb:
