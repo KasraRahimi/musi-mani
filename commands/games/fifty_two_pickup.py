@@ -27,6 +27,19 @@ BUTTONS = ActionRow(
 async def get_initial_message(ctx: SlashContext, fifty_two_pickup_game: FiftyTwoPickup) -> Message:
     pass
 
+
+async def get_player_choice(ctx: SlashContext, msg: Message) -> PlayerChoice | None:
+    pass
+
+
+async def update_game_message(ctx: SlashContext, msg: Message, fifty_two_pickup_game: FiftyTwoPickup) -> None:
+    pass
+
+
+async def set_final_game_message(ctx: SlashContext, msg: Message, fifty_two_pickup_game: FiftyTwoPickup) -> None:
+    pass
+
+
 @slash_command(
     name=COMMAND_NAME,
     description=COMMAND_DESCRIPTION,
