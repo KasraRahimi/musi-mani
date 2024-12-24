@@ -1,5 +1,5 @@
 from enum import Enum
-from .card import Card, Rank, Suit
+from games.utils import Card, Rank, Suit
 from random import shuffle
 
 
