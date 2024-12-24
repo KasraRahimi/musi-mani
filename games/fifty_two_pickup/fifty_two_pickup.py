@@ -25,7 +25,7 @@ class FiftyTwoPickup:
             return self.deck[-1]
         return None
 
-    def pick_up_car(self):
+    def pick_up_card(self):
         if self.outcome is not None:
             return
         self.deck.pop()
