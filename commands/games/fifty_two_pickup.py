@@ -24,6 +24,10 @@ BUTTONS = ActionRow(
     )
 )
 
+async def handle_no_input(ctx: SlashContext, msg: Message) -> None:
+    pass
+
+
 async def get_initial_message(ctx: SlashContext, fifty_two_pickup_game: FiftyTwoPickup) -> Message:
     pass
 
@@ -36,7 +40,7 @@ async def update_game_message(ctx: SlashContext, msg: Message, fifty_two_pickup_
     pass
 
 
-async def set_final_game_message(ctx: SlashContext, msg: Message, fifty_two_pickup_game: FiftyTwoPickup) -> None:
+async def handle_end_game(ctx: SlashContext, msg: Message, fifty_two_pickup_game: FiftyTwoPickup) -> None:
     pass
 
 
@@ -48,4 +52,19 @@ async def set_final_game_message(ctx: SlashContext, msg: Message, fifty_two_pick
     options=[BET_OPTION]
 )
 async def fifty_two_pickup(ctx: SlashContext, bet: int):
-    pass
+    fifty_two_pickup_game = FiftyTwoPickup(bet)
+    msg = await get_initial_message(ctx, fifty_two_pickup_game)
+
+    while fifty_two_pickup_game.outcome is not None:
+        player_choice = await get_player_choice(ctx, msg)
+        match player_choice:
+            case PlayerChoice.PICK_UP:
+                fifty_two_pickup_game.pick_up_card()
+            case PlayerChoice.GIVE_UP:
+                fifty_two_pickup_game.give_up()
+            case None:
+                await handle_no_input(ctx, msg)
+
+        await update_game_message(ctx, msg, fifty_two_pickup_game)
+
+    await handle_end_game(ctx, msg, fifty_two_pickup_game)
