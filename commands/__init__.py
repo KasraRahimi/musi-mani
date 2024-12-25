@@ -1,5 +1,5 @@
 from .misc import name, ping, anonymous, help
-from .games import blackjack, coin_toss, last_call, rps, horse_race
+from .games import blackjack, coin_toss, last_call, rps, horse_race, fifty_two_pickup
 from .talan import balance, add_funds, give, reward, weka_ale
 from .user_profile import profile, set_description, set_name
 
@@ -19,6 +19,7 @@ __all__ = [
     "last_call",
     "rps",
     "horse_race",
+    "fifty_two_pickup",
     # talan
     "balance",
     "add_funds",
