@@ -1,4 +1,5 @@
 from asyncio.exceptions import TimeoutError
+from datetime import datetime
 from enum import StrEnum
 from interactions import slash_command, SlashContext, ActionRow, Button, ButtonStyle, Message, Client
 from interactions.api.events import Component
@@ -6,6 +7,7 @@ from interactions.api.events import Component
 from commands.games.constants import COMMAND_NAME, COMMAND_DESCRIPTION, BET_OPTION, can_player_bet
 from database import BotUser
 from games.fifty_two_pickup import FiftyTwoPickup, Outcome
+from models.game_stat import GameStat
 
 GAME_NAME = "Fifty Two Pickup"
 
@@ -97,6 +99,14 @@ async def handle_end_game(ctx: SlashContext, msg: Message, fifty_two_pickup_game
     bot_user = BotUser(str(ctx.author.id))
     bot_user.deposit(fifty_two_pickup_game.winnings)
 
+    game_stat = GameStat(
+        name=GAME_NAME,
+        date=datetime.now(),
+        bet=fifty_two_pickup_game.bet,
+        payout=fifty_two_pickup_game.winnings,
+        is_win=fifty_two_pickup_game.outcome == Outcome.ALL_PICKED_UP,
+    )
+    bot_user.add_game_stat(game_stat)
     await ctx.edit(message=msg, content=content, components=[])
 
 
