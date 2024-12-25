@@ -97,7 +97,7 @@ async def handle_end_game(ctx: SlashContext, msg: Message, fifty_two_pickup_game
     bot_user = BotUser(str(ctx.author.id))
     bot_user.deposit(fifty_two_pickup_game.winnings)
 
-    await ctx.edit(message=msg, content=content)
+    await ctx.edit(message=msg, content=content, components=[])
 
 
 @slash_command(
