@@ -1,5 +1,4 @@
 from interactions import SlashCommandOption, OptionType, SlashContext
-
 from database import BotUser
 
 COMMAND_NAME = "play"
